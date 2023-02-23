@@ -1,5 +1,4 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+from pprint import pprint
 
 # Есть словарь координат городов
 
@@ -26,7 +25,7 @@ distances['London']['Paris'] = distances_calc(cites['London'], cites['Paris'])
 distances['Paris']['Moscow'] = distances_calc(cites['Paris'], cites['Moscow'])
 distances['Paris']['London'] = distances_calc(cites['Paris'], cites['London'])
 
-print(distances)
+pprint(distances)
 
 
 
