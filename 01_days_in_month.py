@@ -21,5 +21,3 @@ while True:
         continue
     print(calend[str(user_input)])
     break
-
-# TODO здесь ваш код
