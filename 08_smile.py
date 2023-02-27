@@ -7,8 +7,6 @@ import random
 # Параметры функции: кордината X, координата Y, цвет.
 # Вывести 10 смайликов в произвольных точках экрана.
 
-# TODO здесь ваш код
-
 def give_smile(point_x0=100, point_y0=100, size=100):
     color = sd.random_color()
     central_point = sd.get_point(point_x0, point_y0)
