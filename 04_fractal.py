@@ -24,8 +24,6 @@ import time
 
 # можно поиграть -шрифтами- цветами и углами отклонения
 
-# TODO здесь ваш код
-
 import simple_draw as sd
 
 
@@ -57,8 +55,9 @@ def draw_branches(start_point, angle, length, width):
 
 
 sd.resolution = (1200, 800)
+sd.start_drawing()
 draw_branches(start_point=sd.get_point(600, 0), angle=90, length=180, width=10)
-
+sd.finish_drawing()
 sd.pause()
 
 
