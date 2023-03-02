@@ -1,7 +1,3 @@
-# -*- coding: utf-8 -*-
-
-import simple_draw as sd
-
 # Часть 1.
 # Написать функции рисования равносторонних геометрических фигур:
 # - треугольника
@@ -27,7 +23,36 @@ import simple_draw as sd
 # sd.line()
 # Результат решения см lesson_004/results/exercise_01_shapes.jpg
 
-# TODO здесь ваш код
+import simple_draw as sd
+
+
+def draw_figure(point=(10, 10), angle=0, length=200, number_of_sides=3):
+    start_point = sd.get_point(point[0], point[1])
+    for i in range(number_of_sides):
+        side = sd.get_vector(start_point=start_point, angle=angle + (360 / number_of_sides) * i, length=length, width=3)
+        side.draw()
+        start_point = side.end_point
+
+
+def draw_triange(*args, **kwargs):
+    draw_figure(*args, **kwargs, number_of_sides=3)
+
+
+def draw_square(*args, **kwargs):
+    draw_figure(*args, **kwargs, number_of_sides=4)
+
+
+def draw_pentagon(point=(100, 100), angle=0, length=200):
+    draw_figure(point, angle, length, 5)
+
+
+def draw_hexagon(point=(100, 100), angle=0, length=200):
+    start_point = sd.get_point(point[0], point[1])
+    for i in range(6):
+        side = sd.get_vector(start_point=start_point, angle=angle + (360 / 6) * i, length=length, width=3)
+        side.draw()
+        start_point = side.end_point
+
 
 # Часть 1-бис.
 # Попробуйте прикинуть обьем работы, если нужно будет внести изменения в этот код.
@@ -52,5 +77,11 @@ import simple_draw as sd
 # Поэтому среди программистов есть принцип D.R.Y. https://clck.ru/GEsA9
 # Будьте ленивыми, не используйте копи-пасту!
 
+draw_triange()
+draw_triange((150, 150), length=300)
+draw_square()
+draw_square((450, 150), 45, 80)
+draw_pentagon((150, 350), 36, 70)
+draw_hexagon((450, 350), 30, 60)
 
 sd.pause()
