@@ -5,12 +5,8 @@ if __name__ == '__main__':
 else:
     print('Импорт модуля...', __name__)
 
-sd.resolution = (1200, 800)
-sd.resolution = (600, 400)
 
-
-def rainbow():
-    print('Модуль рисования радуги')
+def draw_rainbow():
     colors = [
         sd.COLOR_RED,
         sd.COLOR_ORANGE,
@@ -38,9 +34,9 @@ def rainbow():
     rainbow_centre = sd.get_point(point_x, point_y)
 
     second_per_line = 0.01
-    base_time_limit = 0.5
+    base_time_limit = 0.3
     while second_per_line < base_time_limit:
-        second_per_line += 0.08
+        second_per_line += 0.1
 
         for current_line_index in range(len(colors)):
             sd.circle(
@@ -59,4 +55,4 @@ def rainbow():
                     width=thickness
                 )
             sd.sleep(second_per_line)
-    sd.pause()
+
