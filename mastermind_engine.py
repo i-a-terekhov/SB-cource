@@ -1,48 +1,56 @@
-# Правила:
-# Компьютер загадывает четырехзначное число, все цифры которого различны
-# (первая цифра числа отлична от нуля). Игроку необходимо разгадать задуманное число.
-# Игрок вводит четырехзначное число c неповторяющимися цифрами,
-# компьютер сообщают о количестве «быков» и «коров» в названном числе
-# «бык» — цифра есть в записи задуманного числа и стоит в той же позиции,
-#       что и в задуманном числе
-# «корова» — цифра есть в записи задуманного числа, но не стоит в той же позиции,
-#       что и в задуманном числе
-#
-# Например, если задумано число 3275 и названо число 1234,
-# получаем в названном числе одного «быка» и одну «корову».
-# Очевидно, что число отгадано в том случае, если имеем 4 «быка».
-#
-# Формат ответа компьютера
-# > быки - 1, коровы - 1
-
-# В этом модуле нужно реализовать функции:
-#   загадать_число()
-#   проверить_число(NN) - возвращает словарь {'bulls': N, 'cows': N}
-# Загаданное число хранить в глобальной переменной.
-# Обратите внимание, что строки - это список символов.
-
 import random
+from termcolor import cprint
 
 _hidden_number = []
+_number_from_user = []
 
 
-def make_a_number():
+def save_hidden_number():
     while len(_hidden_number) < 4:
         candidate = random.randint(1, 9)
         if candidate not in _hidden_number:
             _hidden_number.append(candidate)
-    return _hidden_number
 
 
-def check_the_number(number_from_the_user: str):
-    print('Пользователь ввел', end='')
-    print(number_from_the_user)
-    # TODO преобразовать number_from_the_user в list
+def save_str_to_list(input_from_user: str):
+    for i in input_from_user:
+        _number_from_user.append(int(i))
 
-    # TODO сравнить list number_from_the_user с загаданным
 
-    # TODO выдать результат сравнения (быки и коровы)
+def check_the_input_and_save(input_from_user: str):
+    cprint('Пользователь ввел ', end='', color='green')
+    cprint(input_from_user, end='', color='yellow')
+    cprint(' ', end='')
 
-print(make_a_number())
-check_the_number(input('Введите что-нибудь '))
+    try:
+        input_from_user = int(input_from_user)
+    except ValueError:
+        cprint('Введенное значение не является числом', color='red')
+        return False
 
+    if input_from_user > 9999 or input_from_user < 1111:
+        cprint('Число не входит в диапазон', color='red')
+        return False
+    else:
+        cprint('Проверяем:', color='green')
+        save_str_to_list(str(input_from_user))
+        return True
+
+
+def compare_user_number_with_hidden_one():
+    answer = {'bulls': 0, 'cows': 0}
+    for i in range(4):
+        if _hidden_number[i] in _number_from_user:
+            answer['cows'] += 1
+        if _hidden_number[i] == _number_from_user[i]:
+            answer['bulls'] += 1
+            answer['cows'] -= 1
+    _number_from_user.clear()
+    return answer
+
+
+def mach(answer: dict):
+    if answer.get('bulls') == 4:
+        return True
+    else:
+        return False

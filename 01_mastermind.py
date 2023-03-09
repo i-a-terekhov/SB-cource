@@ -43,4 +43,30 @@
 # Это пример применения SOLID принципа (см https://goo.gl/GFMoaI) в архитектуре программ.
 # Точнее, в этом случае важен принцип единственной ответственности - https://goo.gl/rYb3hT
 
-# TODO здесь ваш код...
+import mastermind_engine as engine
+from termcolor import cprint, colored
+
+
+while True:
+    print('Начинаем игру! Компьютер загадал число')
+    engine.save_hidden_number()
+    number_of_attempts = 0
+    while True:
+        input_from_user = input('Введите число ')
+        if engine.check_the_input_and_save(input_from_user):
+            number_of_attempts += 1
+            compare_result = engine.compare_user_number_with_hidden_one()
+            if engine.mach(compare_result):
+                cprint('Победа! Число угадано! Число попыток: ', on_color='on_magenta', end='')
+                cprint(str(number_of_attempts), on_color='on_magenta')
+                break
+            else:
+                cprint('Результат: ', color='green', end='')
+                cprint(compare_result, color='yellow')
+                cprint('Попробуйте еще раз. Уже сделано попыток: ', color='green', end='')
+                cprint(str(number_of_attempts), color='yellow')
+
+    end_yet = input('Если хотите еще одну игру, введите "Да" ')
+    if end_yet != 'Да':
+        cprint('Всего вам хорошего!', color='magenta')
+        break
