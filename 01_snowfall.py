@@ -49,30 +49,58 @@ class Snowflake:
             return False
 
 
-flake = Snowflake()
+def get_flakes(count=20):
+    snowflakes = [
+        Snowflake() for _ in range(count)
+    ]
+    return snowflakes
 
-while True:
-    flake.clear_previous_picture()
-    flake.move()
-    flake.draw()
-    if not flake.can_fall():
-        break
-    sd.sleep(0.1)
-    if sd.user_want_exit():
-        break
 
-# шаг 2: создать снегопад - список объектов Снежинка в отдельном списке, обработку примерно так:
-# flakes = get_flakes(count=N)  # создать список снежинок
+def get_fallen_flakes(snowflakes):
+    fallen_flakes = []
+    number_of_deletions_in_this_run = 0
+    for flake in range(len(snowflakes)):
+        if snowflakes[flake - number_of_deletions_in_this_run].param['Oy'] < 1:
+            fallen_flakes.append(flake)
+            del snowflakes[flake - number_of_deletions_in_this_run]
+            number_of_deletions_in_this_run += 1
+    return fallen_flakes
+
+
+def append_flakes(current_flakes=None, needed_flakes=None):
+    if current_flakes is None:
+        current_flakes = []
+    if needed_flakes is None:
+        needed_flakes = []
+    needed_flakes = len(needed_flakes)
+    new_flakes = get_flakes(needed_flakes)
+    current_flakes.extend(new_flakes)
+
+
+# flake = Snowflake()
+#
 # while True:
-#     for flake in flakes:
-#         flake.clear_previous_picture()
-#         flake.move()
-#         flake.draw()
-#     fallen_flakes = get_fallen_flakes()  # подчитать сколько снежинок уже упало
-#     if fallen_flakes:
-#         append_flakes(count=fallen_flakes)  # добавить еще сверху
+#     flake.clear_previous_picture()
+#     flake.move()
+#     flake.draw()
+#     if not flake.can_fall():
+#         break
 #     sd.sleep(0.1)
 #     if sd.user_want_exit():
 #         break
+
+# шаг 2: создать снегопад - список объектов Снежинка в отдельном списке, обработку примерно так:
+flakes = get_flakes(count=20)  # создать список снежинок
+while True:
+    for flake in flakes:
+        flake.clear_previous_picture()
+        flake.move()
+        flake.draw()
+    fallen_flakes = get_fallen_flakes(flakes)  # подчитать сколько снежинок уже упало
+    if fallen_flakes:
+        append_flakes(current_flakes=flakes, needed_flakes=fallen_flakes)  # добавить еще
+    sd.sleep(0.1)
+    if sd.user_want_exit():
+        break
 
 sd.pause()
