@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from random import randint
 
 # Доработать практическую часть урока lesson_007/python_snippets/08_practice.py
@@ -26,6 +24,67 @@ from random import randint
 # Человеку и коту надо вместе прожить 365 дней.
 
 # TODO здесь ваш код
+
+
+class Street:
+
+    def __init__(self):
+        self.name = 'Улица'
+        self.dirty = 1000
+
+    def __str__(self):
+        return 'Это суровая улица'
+
+
+class House:
+
+    def __init__(self):
+        self.name = 'Домище'
+        self.food = 0
+        self.food_for_cat = 0
+        self.dirty = 0
+        self.money = 0
+
+    def __str__(self):
+        return 'Дом: еда - {}, еда для кошек - {}, грязь - {}, деньги - {}'.format(
+            self.food, self.food_for_cat, self.dirty, self.money)
+
+
+class Cat:
+
+    def __init__(self, name):
+        self.name = name
+        self.home = Street()
+        self.satiety = 30  # сытость
+        self.drowsiness = 30  # сонливость
+        self.happiness = 0
+
+    def __str__(self):
+        return 'Кот {} в доме {}: сытость {}, сонливость {}, счастье {}'.format(
+            self.name, self.home.name, self.satiety, self.drowsiness, self.happiness)
+
+    def make_a_mess(self):
+        if type(self.home) is House:
+            self.satiety -= 20
+            self.drowsiness += 20
+            self.home.dirty += 20
+        else:
+            print('Кот {} еще живет на улице'.format(self.name))
+            return
+
+    def act(self):
+        if self.satiety <= 0:
+            print('Кот {} умер с голоду'.format(self.name))
+            return
+
+
+SweetHome = House()
+Bubble = Cat('Бублик')
+Bubble.make_a_mess()
+Bubble.home = SweetHome
+Bubble.make_a_mess()
+print(Bubble)
+print(SweetHome)
 
 # Усложненное задание (делать по желанию)
 # Создать несколько (2-3) котов и подселить их в дом к человеку.
