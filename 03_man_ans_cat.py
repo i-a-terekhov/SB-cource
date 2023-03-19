@@ -1,3 +1,4 @@
+import random
 from random import randint
 
 # Доработать практическую часть урока lesson_007/python_snippets/08_practice.py
@@ -23,8 +24,6 @@ from random import randint
 
 # Человеку и коту надо вместе прожить 365 дней.
 
-# TODO здесь ваш код
-
 
 class Street:
 
@@ -40,16 +39,16 @@ class Street:
 
 class House:
 
-    def __init__(self):
-        self.name = 'Домик'
+    def __init__(self, name='Умолчательное название'):
+        self.name = name
         self.food = 0
         self.food_for_cat = 150
         self.dirty = 0
         self.money = 0
 
     def __str__(self):
-        return 'Дом: еда - {}, еда для кошек - {}, грязь - {}, деньги - {}'.format(
-            self.food, self.food_for_cat, self.dirty, self.money)
+        return 'Статус дома. Название {}: еда - {}, еда для кошек - {}, грязь - {}, деньги - {}'.format(
+            self.name, self.food, self.food_for_cat, self.dirty, self.money)
 
 
 class Cat:
@@ -62,11 +61,10 @@ class Cat:
         self.happiness = 0
 
     def __str__(self):
-        return 'Кот {} живет в/на {}: сытость {}, сонливость {}, счастье {}'.format(
+        return 'Статус котика. Имя {} живет в/на {}: сытость {}, сонливость {}, счастье {}'.format(
             self.name, self.home.name, self.satiety, self.drowsiness, self.happiness)
 
     def at_home(self):
-        # TODO вот тут надо разобраться, почему не срабатывает if
         if type(self.home) is House:
             return True
         else:
@@ -74,10 +72,12 @@ class Cat:
             return False
 
     def there_is_enough_food(self):
+        print('Кот проверяет количество корма в доме {} - {}'.format(self.home.name, self.home.food_for_cat), end='')
         if self.home.food_for_cat >= 50:
+            print(' - корма хватает, котик кушает')
             return True
         else:
-            print('Недостаточно корма для кота')
+            print(' - корма недостаточно :(')
             return False
 
     def make_a_mess(self):  # устроить беспорядок
@@ -88,13 +88,13 @@ class Cat:
     def eat(self):
         if self.at_home() and self.there_is_enough_food():
             self.home.food_for_cat -= 50
-            self.satiety += 120
+            self.satiety += 80 + int(random.random() * 20)
             self.drowsiness += 30
 
     def sleep(self):
-        self.satiety -= 100
+        self.drowsiness -= 100
 
-    def is_cat_dead(self):
+    def is_dead(self):
         if self.satiety <= 0:
             print('Кот {} умер с голоду'.format(self.name))
             return True
@@ -104,49 +104,120 @@ class Cat:
     def act(self):
         self.satiety -= 20
         if self.satiety <= 50:
-            print('Кот {} решил покушать'.format(self.name))
+            print('Кот {} решил покушать, так как его сытость составляет {}'.format(self.name, self.satiety))
             self.eat()
         elif self.drowsiness >= 100:
             print('Кот {} решил поспать'.format(self.name))
             self.sleep()
         else:
+            print('Кот {} решил устроить беспорядок'.format(self.name))
             self.make_a_mess()
 
 
 class Man:
 
-    def __init__(self):
-        self.home = House()
-        self.satiety = 30  # сытость
+    def __init__(self, home_name):
+        self.name = 'Челик'
+        self.home = House(name=home_name)
+        self.satiety = 80  # сытость
         self.drowsiness = 30  # сонливость
         self.happiness = 0
 
     def __str__(self):
-        return 'Хозяин: сытость {}, сонливость {}, счастье {}'.format(
+        return 'Статус хозяина. Сытость {}, сонливость {}, счастье {}'.format(
             self.satiety, self.drowsiness, self.happiness)
 
     def bring_cat_into_the_house(self, CatExem):
         if isinstance(CatExem, Cat):
-            print('Челик увидел кота на улице', CatExem.at_home())
-            if not CatExem.at_home:
+            if not CatExem.at_home():
                 print('Кота нашли на улице и отнесли в дом {}'.format(self.home.name))
                 CatExem.home = self.home
 
+    def is_dead(self):
+        if self.satiety <= 0:
+            print('Хозяеин {} умер с голоду'.format(self.name))
+            return True
+        else:
+            return False
 
-Chelik = Man()
+    def there_is_enough_food(self):
+        print('Хозяин проверяет количество еды в доме {} - {}'.format(self.home.name, self.home.food), end='')
+        if self.home.food >= 50:
+            print(' - еды хватает, человек кушает')
+            return True
+        else:
+            print(' - еды недостаточно :(')
+            return False
+
+    def eat(self):
+        if self.there_is_enough_food():
+            self.home.food_for_cat -= 50
+            self.satiety += 80
+            self.drowsiness += 30
+
+    def sleep(self):
+        self.drowsiness -= 100
+
+    def work(self):
+        self.home.money += 150
+
+    def bye_food_for_cat(self):
+        self.home.money -= 50
+        self.home.food_for_cat += 100
+
+    def bye_food(self):
+        self.home.money -= 50
+        self.home.food += 100
+
+    def act(self):
+        self.satiety -= 20
+        if self.satiety <= 50:
+            print('Хозяин {} решил покушать, так как его сытость составляет {}'.format(self.name, self.satiety))
+            self.eat()
+        elif self.drowsiness >= 100:
+            print('Хозяин {} решил поспать'.format(self.name))
+            self.sleep()
+        elif self.home.food_for_cat <= 100:
+            print('Хозяин {} решил купить еды котику'.format(self.name))
+            self.bye_food_for_cat()
+        elif self.home.food <= 100:
+            print('Хозяин {} решил купить еду себе'.format(self.name))
+            self.bye_food()
+        else:
+            print('Хозяин {} решил сходить на работу'.format(self.name))
+            self.work()
+
+
+Chelik = Man('Домик')
 Bubble = Cat('Бублик')
+Baton = Cat('Батон')
 
-for i in range(15):
+for i in range(100):
     print('--------------------------------- день {} ----------------'.format(i))
-    Chelik.bring_cat_into_the_house(Bubble)
     if isinstance(Bubble, Cat):
         Bubble.act()
-        if Bubble.is_cat_dead():
+        if Bubble.is_dead():
             Bubble = None
         else:
             print(Bubble)
-    print(Chelik)
-    print(Chelik.home)
+    if isinstance(Baton, Cat):
+        Baton.act()
+        if Baton.is_dead():
+            Baton = None
+        else:
+            print(Baton)
+    if isinstance(Chelik, Man):
+        Chelik.act()
+        if Chelik.is_dead():
+            Chelik = None
+        else:
+            print(Chelik)
+    if Chelik is not None:
+        Chelik.bring_cat_into_the_house(Bubble)
+        Chelik.bring_cat_into_the_house(Baton)
+        print(Chelik.home)
+    else:
+        print('Человек умер, дом запустел')
 
 
 # Усложненное задание (делать по желанию)
