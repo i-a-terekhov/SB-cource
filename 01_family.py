@@ -47,6 +47,19 @@ class House:
         self.money = 100
         self.food = 50
 
+    def food_is_end(self):
+        if self.food == 0:
+            return True
+        else:
+            return False
+
+    def money_is_end(self):
+        if self.money == 0:
+            return True
+        else:
+
+            return False
+
     def __str__(self):
         return 'В доме есть {} ед. денег, и {} ед. еды'.format(self.money, self.food)
 
@@ -58,36 +71,55 @@ class Human:
         self.satiety = 30  # сытость
         self.happiness = 100
         self.house = house
+        self.there_was_no_action = True
 
     def __str__(self):
         return 'Персонаж {} живет в доме {}, сыт на {}, счастлив на {}'.format(
             self.name, self.house.name, self.satiety, self.happiness)
 
-    def eat(self):
-        if 40 > self.house.food > 0:
-            self.satiety += self.house.food
-            self.house.food -= self.house.food
-        else:
-            self.satiety += 40  # +30 условие задания, +10 из-за затрат 10 ед. на любое действие
-            self.house.food -= 30
+    def act(self):
+        self.satiety -= 10
+        self.there_was_no_action = True
+        print('Персонаж {} выбирает что делать...'.format(self.name))
+        if self.satiety < 70:
+            print('Персонаж {} захотел покушать'.format(self.name))
+            if self.house.food_is_end():
+                cprint('В доме закончилась еда!', color='red')
+                self.there_was_no_action = True
+            else:
+                self.eat()
+                self.there_was_no_action = False
 
-    def death(self):
-        if self.satiety < 0:
-            print('человек умер от голода')
+    def eat(self):
+        volume_of_food = 30
+        if 30 > self.house.food > 0:
+            volume_of_food = self.house.food
+        self.satiety += volume_of_food + 10  # условие задания +10 из-за затрат 10 ед. на любое действие
+        self.house.food -= volume_of_food
+        print('Персонаж {} покушал на {} ед. еды, осталось еды {}'.format(self.name, volume_of_food, self.house.food))
+
+    def is_not_death(self):
+        if self.satiety > 0:
             return True
         else:
+            print('Персонаж {} умер от голода'.format(self.name))
             return False
 
 
 class Husband(Human):
 
-    def __str__(self) -> str:
-        return 'Персонаж'
-
     def act(self):
-        pass
+        super().act()
+        if self.there_was_no_action:
+            if self.house.money_is_end():
+                cprint('В доме закончились все деньги!', color='red')
+                self.work()
+            else:
+                print('Персонаж не нашел для себя занятия...')
 
     def work(self):
+        self.house.money += 150
+        print('Персонаж {} пошел на работу. Теперь денег в доме стало {}'.format(self.name, self.house.money))
         pass
 
     def gaming(self):
@@ -97,10 +129,24 @@ class Husband(Human):
 class Wife(Human):
 
     def act(self):
-        pass
+        super().act()
+        if self.there_was_no_action:
+            if self.house.food_is_end():
+                cprint('В доме закончилась свя еда!', color='red')
+                self.shopping()
+            else:
+                print('Персонаж не нашел для себя занятия...')
 
     def shopping(self):
-        pass
+        if self.house.money == 0:
+            print('Персонаж {} хочет сходить за продуктами, но денег нет'.format(self.name))
+            return
+        volume_of_products = 80
+        if volume_of_products > self.house.money > 0:
+            volume_of_products = self.house.money
+        self.house.money -= volume_of_products
+        self.house.food += volume_of_products
+        print('Персонаж {} купил {} ед. продуктов'.format(self.name, volume_of_products))
 
     def buy_fur_coat(self):
         pass
@@ -115,11 +161,20 @@ masha = Wife(name='Маша', house=home)
 
 for day in range(365):
     cprint('================== День {} =================='.format(day), color='red')
-    serge.act()
-    masha.act()
-    # TODO pycharm ругается, что cprint ожидает str, а получает класс Human, когда как в нем прописан __str__
-    cprint(str(serge), color='cyan')
-    cprint(str(masha), color='cyan')
+    if isinstance(serge, Husband) and serge.is_not_death():
+        serge.act()
+    else:
+        serge = None
+    if isinstance(masha, Wife) and masha.is_not_death():
+        masha.act()
+    else:
+        masha = None
+
+    if isinstance(serge, Husband) and serge.is_not_death():
+        cprint(str(serge), color='cyan')
+    if isinstance(masha, Wife) and masha.is_not_death():
+        cprint(str(masha), color='cyan')
+
     cprint(str(home), color='cyan')
 
 # TODO после реализации первой части - отдать на проверку учителю
