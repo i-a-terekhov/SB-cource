@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from termcolor import cprint
 from random import randint
 
@@ -45,21 +43,48 @@ from random import randint
 class House:
 
     def __init__(self):
-        pass
-
-
-class Husband:
-
-    def __init__(self):
-        pass
+        self.name = 'Дом'
+        self.money = 100
+        self.food = 50
 
     def __str__(self):
-        return super().__str__()
+        return 'В доме есть {} ед. денег, и {} ед. еды'.format(self.money, self.food)
 
-    def act(self):
-        pass
+
+class Human:
+
+    def __init__(self, name, house):
+        self.name = name
+        self.satiety = 30  # сытость
+        self.happiness = 100
+        self.house = house
+
+    def __str__(self):
+        return 'Персонаж {} живет в доме {}, сыт на {}, счастлив на {}'.format(
+            self.name, self.house.name, self.satiety, self.happiness)
 
     def eat(self):
+        if 40 > self.house.food > 0:
+            self.satiety += self.house.food
+            self.house.food -= self.house.food
+        else:
+            self.satiety += 40  # +30 условие задания, +10 из-за затрат 10 ед. на любое действие
+            self.house.food -= 30
+
+    def death(self):
+        if self.satiety < 0:
+            print('человек умер от голода')
+            return True
+        else:
+            return False
+
+
+class Husband(Human):
+
+    def __str__(self) -> str:
+        return 'Персонаж'
+
+    def act(self):
         pass
 
     def work(self):
@@ -69,18 +94,9 @@ class Husband:
         pass
 
 
-class Wife:
-
-    def __init__(self):
-        pass
-
-    def __str__(self):
-        return super().__str__()
+class Wife(Human):
 
     def act(self):
-        pass
-
-    def eat(self):
         pass
 
     def shopping(self):
@@ -94,16 +110,17 @@ class Wife:
 
 
 home = House()
-serge = Husband(name='Сережа')
-masha = Wife(name='Маша')
+serge = Husband(name='Сережа', house=home)
+masha = Wife(name='Маша', house=home)
 
 for day in range(365):
     cprint('================== День {} =================='.format(day), color='red')
     serge.act()
     masha.act()
-    cprint(serge, color='cyan')
-    cprint(masha, color='cyan')
-    cprint(home, color='cyan')
+    # TODO pycharm ругается, что cprint ожидает str, а получает класс Human, когда как в нем прописан __str__
+    cprint(str(serge), color='cyan')
+    cprint(str(masha), color='cyan')
+    cprint(str(home), color='cyan')
 
 # TODO после реализации первой части - отдать на проверку учителю
 
@@ -189,22 +206,22 @@ class Child:
 # отправить на проверку учителем.
 
 
-home = House()
-serge = Husband(name='Сережа')
-masha = Wife(name='Маша')
-kolya = Child(name='Коля')
-murzik = Cat(name='Мурзик')
-
-for day in range(365):
-    cprint('================== День {} =================='.format(day), color='red')
-    serge.act()
-    masha.act()
-    kolya.act()
-    murzik.act()
-    cprint(serge, color='cyan')
-    cprint(masha, color='cyan')
-    cprint(kolya, color='cyan')
-    cprint(murzik, color='cyan')
+# home = House()
+# serge = Husband(name='Сережа')
+# masha = Wife(name='Маша')
+# kolya = Child(name='Коля')
+# murzik = Cat(name='Мурзик')
+#
+# for day in range(365):
+#     cprint('================== День {} =================='.format(day), color='red')
+#     serge.act()
+#     masha.act()
+#     kolya.act()
+#     murzik.act()
+#     cprint(serge, color='cyan')
+#     cprint(masha, color='cyan')
+#     cprint(kolya, color='cyan')
+#     cprint(murzik, color='cyan')
 
 
 # Усложненное задание (делать по желанию)
