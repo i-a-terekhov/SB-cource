@@ -1,3 +1,5 @@
+import random
+
 from termcolor import cprint
 from random import randint
 
@@ -42,10 +44,16 @@ from random import randint
 
 class House:
 
+    total_food = 0
+
     def __init__(self):
         self.name = 'Дом'
         self.money = 100
         self.food = 50
+        self.dirty = 0
+
+    def act(self):
+        self.dirty += 5
 
     def food_is_end(self):
         if self.food == 0:
@@ -61,10 +69,13 @@ class House:
             return False
 
     def __str__(self):
-        return 'В доме есть {} ед. денег, и {} ед. еды'.format(self.money, self.food)
+        return 'В доме есть {} ед. денег, и {} ед. еды. Уровень грязи равен {}'.format(
+            self.money, self.food, self.dirty)
 
 
 class Human:
+
+    total_dirty_time = 0
 
     def __init__(self, name, house):
         self.name = name
@@ -79,8 +90,12 @@ class Human:
 
     def act(self):
         self.satiety -= 10
-        self.there_was_no_action = True
+        if self.house.dirty > 90:
+            self.happiness -= 10
+            self.total_dirty_time += 1
+
         print('Персонаж {} выбирает что делать...'.format(self.name))
+        self.there_was_no_action = True
         if self.satiety < 70:
             print('Персонаж {} захотел покушать'.format(self.name))
             if self.house.food_is_end():
@@ -99,14 +114,19 @@ class Human:
         print('Персонаж {} покушал на {} ед. еды, осталось еды {}'.format(self.name, volume_of_food, self.house.food))
 
     def is_not_death(self):
-        if self.satiety > 0:
+        if self.satiety >= 0 and self.happiness >= 10:
             return True
-        else:
+        elif self.satiety < 0:
             print('Персонаж {} умер от голода'.format(self.name))
+            return False
+        elif self.happiness < 10:
+            print('Персонаж {} умер от депрессии'.format(self.name))
             return False
 
 
 class Husband(Human):
+
+    total_earned = 0  # всего заработано
 
     def act(self):
         super().act()
@@ -114,19 +134,27 @@ class Husband(Human):
             if self.house.money_is_end():
                 cprint('В доме закончились все деньги!', color='red')
                 self.work()
+            elif self.happiness < 50:
+                print('Персонаж {} решил поиграть в танки'.format(self.name))
+                self.gaming()
             else:
-                print('Персонаж не нашел для себя занятия...')
+                print('Персонаж {} от безысходности решил поработать'.format(self.name))
+                self.happiness -= 5
+                self.work()
 
     def work(self):
         self.house.money += 150
+        self.total_earned += 150
         print('Персонаж {} пошел на работу. Теперь денег в доме стало {}'.format(self.name, self.house.money))
         pass
 
     def gaming(self):
-        pass
+        self.happiness += 20
 
 
 class Wife(Human):
+
+    total_coat_buy = 0
 
     def act(self):
         super().act()
@@ -134,25 +162,38 @@ class Wife(Human):
             if self.house.food_is_end():
                 cprint('В доме закончилась свя еда!', color='red')
                 self.shopping()
+            elif self.house.dirty > 90:
+                print('Персонаж {} решил убраться в доме'.format(self.name))
+                self.clean_house()
+            elif self.house.money > 350 and (self.happiness < 80 or random.random() > 0.95):
+                print('Персонаж {} решил купить дорогущую шубу'.format(self.name))
+                self.buy_fur_coat()
             else:
-                print('Персонаж не нашел для себя занятия...')
+                print('Персонаж не нашел для себя занятия, уровень счастья понизился...')
+                self.happiness -= 5
 
     def shopping(self):
         if self.house.money == 0:
             print('Персонаж {} хочет сходить за продуктами, но денег нет'.format(self.name))
             return
         volume_of_products = 80
-        if volume_of_products > self.house.money > 0:
+        if volume_of_products > self.house.money:
             volume_of_products = self.house.money
         self.house.money -= volume_of_products
         self.house.food += volume_of_products
+        self.house.total_food += volume_of_products
         print('Персонаж {} купил {} ед. продуктов'.format(self.name, volume_of_products))
 
     def buy_fur_coat(self):
-        pass
+        self.house.money -= 350
+        self.happiness += 60
+        self.total_coat_buy += 1
 
     def clean_house(self):
-        pass
+        volume_of_clean = 100
+        if self.house.dirty < volume_of_clean:
+            volume_of_clean = self.house.dirty
+        self.house.dirty -= volume_of_clean
 
 
 home = House()
@@ -169,13 +210,24 @@ for day in range(365):
         masha.act()
     else:
         masha = None
+    home.act()
 
     if isinstance(serge, Husband) and serge.is_not_death():
         cprint(str(serge), color='cyan')
+    else:
+        serge = None
     if isinstance(masha, Wife) and masha.is_not_death():
         cprint(str(masha), color='cyan')
+    else:
+        masha = None
 
     cprint(str(home), color='cyan')
+
+print('ИТОГО заработано: {}'.format(serge.total_earned))
+print('ИТОГО шуб куплено: {}'.format(masha.total_coat_buy))
+print('ИТОГО продуктов куплено: {}'.format(home.total_food))
+print('ИТОГО дней срача: {}'.format(serge.total_dirty_time))
+
 
 # TODO после реализации первой части - отдать на проверку учителю
 
@@ -300,4 +352,3 @@ class Child:
 #       for salary in range(50, 401, 50):
 #           max_cats = life.experiment(salary)
 #           print(f'При зарплате {salary} максимально можно прокормить {max_cats} котов')
-
