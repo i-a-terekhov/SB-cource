@@ -194,6 +194,10 @@ class Wife(Human):
         self.house.dirty -= volume_of_clean
 
 
+class Cat:
+
+
+
 home = House()
 serge = Husband(name='Сережа', house=home)
 masha = Wife(name='Маша', house=home)
