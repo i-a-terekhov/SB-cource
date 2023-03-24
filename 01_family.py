@@ -105,7 +105,7 @@ class Human:
                 self.eat()
                 self.there_was_no_action = False
 
-        elif randint(1, 10) > 9:
+        elif randint(1, 10) > 8:
             print('Персонаж {} решил погладить кота'.format(self.name))
             self.petting_cat()
             self.total_petting_cat += 1
@@ -178,7 +178,7 @@ class Wife(Human):
                 print('Персонаж {} решил купить дорогущую шубу'.format(self.name))
                 self.buy_fur_coat()
             else:
-                print('Персонаж не нашел для себя занятия, уровень счастья понизился...')
+                print('Персонаж {} не нашел для себя занятия, уровень счастья понизился...'.format(self.name))
                 self.happiness -= 5
 
     def shopping(self):
@@ -227,29 +227,31 @@ class Cat:
 home = House()
 serge = Husband(name='Сережа', house=home)
 masha = Wife(name='Маша', house=home)
+buble = Cat(name='Бубл', house=home)
+family = [serge, masha, buble, home]
 
 for day in range(365):
     cprint('================== День {} =================='.format(day), color='red')
-    if isinstance(serge, Husband) and serge.is_not_death():
-        serge.act()
-    else:
-        serge = None
-    if isinstance(masha, Wife) and masha.is_not_death():
-        masha.act()
-    else:
-        masha = None
-    home.act()
 
-    if isinstance(serge, Husband) and serge.is_not_death():
-        cprint(str(serge), color='cyan')
-    else:
-        serge = None
-    if isinstance(masha, Wife) and masha.is_not_death():
-        cprint(str(masha), color='cyan')
-    else:
-        masha = None
+    # заставляем действовать каждый элемент семьи:
+    for each in family:
+        if type(each) is not None:
+            if hasattr(each, 'is_not_death'):
+                if each.is_not_death():
+                    each.act()
+                else:
+                    each = None
+            else:
+                each.act()
 
-    cprint(str(home), color='cyan')
+    # выводим __str__ каждого элемента семьи:
+    for each in family:
+        if type(each) is not None:
+            if hasattr(each, 'is_not_death'):
+                cprint(str(each), color='cyan')
+            else:
+                each = None
+
 
 print('ИТОГО заработано: {}'.format(serge.total_earned))
 print('ИТОГО шуб куплено: {}'.format(masha.total_coat_buy))
