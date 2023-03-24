@@ -64,7 +64,12 @@ class House:
         if self.money == 0:
             return True
         else:
+            return False
 
+    def food_for_cat_is_end(self):
+        if self.food_for_cat == 0:
+            return True
+        else:
             return False
 
     def __str__(self):
@@ -159,6 +164,8 @@ class Husband(Human):
 
     def gaming(self):
         self.happiness += 20
+        if self.happiness > 100:
+            self.happiness = 100
 
 
 class Wife(Human):
@@ -169,7 +176,10 @@ class Wife(Human):
         super().act()
         if self.there_was_no_action:
             if self.house.food_is_end():
-                cprint('В доме закончилась свя еда!', color='red')
+                cprint('В доме закончилась вся еда!', color='red')
+                self.shopping()
+            elif self.house.food_for_cat_is_end():
+                cprint('Надо срочно купить котиковой еды', color='red')
                 self.shopping()
             elif self.house.dirty > 90:
                 print('Персонаж {} решил убраться в доме'.format(self.name))
@@ -188,14 +198,25 @@ class Wife(Human):
         volume_of_products = 80
         if volume_of_products > self.house.money:
             volume_of_products = self.house.money
+
+        if self.house.food < 20:
+            human_food = volume_of_products
+            cat_food = 0
+        else:
+            human_food = int(volume_of_products / 3)
+            cat_food = volume_of_products - human_food
+
         self.house.money -= volume_of_products
-        self.house.food += volume_of_products
-        self.house.total_food += volume_of_products
-        print('Персонаж {} купил {} ед. продуктов'.format(self.name, volume_of_products))
+        self.house.food += human_food
+        self.house.food_for_cat += cat_food
+        self.house.total_food += human_food
+        print('Персонаж {} купил {} ед. продуктов и {} ед. котиковой еды'.format(self.name, human_food, cat_food))
 
     def buy_fur_coat(self):
         self.house.money -= 350
         self.happiness += 60
+        if self.happiness > 100:
+            self.happiness = 100
         self.total_coat_buy += 1
 
     def clean_house(self):
@@ -209,48 +230,85 @@ class Cat:
 
     def __init__(self, name, house):
         self.name = name
+        self.house = house
         self.satiety = 30  # сытость
 
+    def __str__(self):
+        return 'Котик {} живет в доме {}, сыт на {}'.format(
+            self.name, self.house.name, self.satiety)
+
     def act(self):
-        None
+        self.satiety -= 10
+        if self.satiety < 30:
+            print('Кот {} решает покушать'.format(self.name))
+            if self.house.food_for_cat_is_end():
+                cprint('В доме закончилась котиковная еда!', color='red')
+            else:
+                self.eat()
+        elif randint(1, 10) > 5:
+            print('Котик {} решает подрать обои'.format(self.name))
+            self.tear_up_the_wallpaper()
+        else:
+            print('Котик {} решает поспать'.format(self.name))
+            self.sleep()
 
     def eat(self):
-        None
+        volume_of_cat_food = 10
+        if self.house.food_for_cat < volume_of_cat_food:
+            volume_of_cat_food = self.house.food_for_cat
+        self.satiety += (volume_of_cat_food * 2) + 10  # условие задания +10 из-за затрат 10 ед. на любое действие
+        self.house.food_for_cat -= volume_of_cat_food
+        print('Кот {} покушал на {} ед.'.format(self.name, volume_of_cat_food))
 
     def sleep(self):
-        None
+        print('Котик {} сладенько спит'.format(self.name))
 
     def tear_up_the_wallpaper(self):
-        None
+        self.house.dirty += 15
+
+    def is_not_death(self):
+        if self.satiety >= 0:
+            return True
+        elif self.satiety < 0:
+            print('Персонаж {} умер от голода'.format(self.name))
+            return False
 
 
 home = House()
 serge = Husband(name='Сережа', house=home)
 masha = Wife(name='Маша', house=home)
-buble = Cat(name='Бубл', house=home)
-family = [serge, masha, buble, home]
+bubble = Cat(name='Бубл', house=home)
+dubble = Cat(name='Дубл', house=home)
+family = [
+    serge,
+    masha,
+    bubble,
+    dubble,
+    home,
+]
 
 for day in range(365):
     cprint('================== День {} =================='.format(day), color='red')
 
     # заставляем действовать каждый элемент семьи:
     for each in family:
-        if type(each) is not None:
-            if hasattr(each, 'is_not_death'):
-                if each.is_not_death():
-                    each.act()
-                else:
-                    each = None
-            else:
+        if hasattr(each, 'is_not_death'):
+            if each.is_not_death():
                 each.act()
+            else:
+                family.remove(each)
+        else:
+            each.act()
 
     # выводим __str__ каждого элемента семьи:
     for each in family:
-        if type(each) is not None:
-            if hasattr(each, 'is_not_death'):
+        if hasattr(each, 'is_not_death'):
+            if each.is_not_death():
                 cprint(str(each), color='cyan')
             else:
-                each = None
+                family.remove(each)
+        else:
+            cprint(str(each), color='cyan')
 
 
 print('ИТОГО заработано: {}'.format(serge.total_earned))
@@ -284,24 +342,6 @@ print('ИТОГО погладили кота: {}'.format(masha.total_petting_ca
 # Степень сытости не должна падать ниже 0, иначе кот умрет от голода.
 #
 # Если кот дерет обои, то грязи становится больше на 5 пунктов
-
-
-class Cat:
-
-    def __init__(self):
-        pass
-
-    def act(self):
-        pass
-
-    def eat(self):
-        pass
-
-    def sleep(self):
-        pass
-
-    def soil(self):
-        pass
 
 
 ######################################################## Часть вторая бис
