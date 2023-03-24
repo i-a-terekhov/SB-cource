@@ -49,6 +49,7 @@ class House:
         self.money = 100
         self.food = 50
         self.dirty = 0
+        self.food_for_cat = 30
 
     def act(self):
         self.dirty += 5
@@ -74,6 +75,7 @@ class House:
 class Human:
 
     total_dirty_time = 0
+    total_petting_cat = 0
 
     def __init__(self, name, house):
         self.name = name
@@ -89,19 +91,25 @@ class Human:
     def act(self):
         self.satiety -= 10
         if self.house.dirty > 90:
-            self.happiness -= 10
+            self.happiness -= 5
             self.total_dirty_time += 1
 
         print('Персонаж {} выбирает что делать...'.format(self.name))
         self.there_was_no_action = True
+
         if self.satiety < 70:
             print('Персонаж {} захотел покушать'.format(self.name))
             if self.house.food_is_end():
                 cprint('В доме закончилась еда!', color='red')
-                self.there_was_no_action = True
             else:
                 self.eat()
                 self.there_was_no_action = False
+
+        elif randint(1, 10) > 9:
+            print('Персонаж {} решил погладить кота'.format(self.name))
+            self.petting_cat()
+            self.total_petting_cat += 1
+            self.there_was_no_action = False
 
     def eat(self):
         volume_of_food = 30
@@ -120,6 +128,9 @@ class Human:
         elif self.happiness < 10:
             print('Персонаж {} умер от депрессии'.format(self.name))
             return False
+
+    def petting_cat(self):
+        self.happiness += 5
 
 
 class Husband(Human):
@@ -163,7 +174,7 @@ class Wife(Human):
             elif self.house.dirty > 90:
                 print('Персонаж {} решил убраться в доме'.format(self.name))
                 self.clean_house()
-            elif self.house.money > 350 and (self.happiness < 80 or randint(1, 10) > 9):
+            elif self.house.money > 350 and (self.happiness < 50 or randint(1, 10) > 9):
                 print('Персонаж {} решил купить дорогущую шубу'.format(self.name))
                 self.buy_fur_coat()
             else:
@@ -196,6 +207,21 @@ class Wife(Human):
 
 class Cat:
 
+    def __init__(self, name, house):
+        self.name = name
+        self.satiety = 30  # сытость
+
+    def act(self):
+        None
+
+    def eat(self):
+        None
+
+    def sleep(self):
+        None
+
+    def tear_up_the_wallpaper(self):
+        None
 
 
 home = House()
@@ -229,6 +255,8 @@ print('ИТОГО заработано: {}'.format(serge.total_earned))
 print('ИТОГО шуб куплено: {}'.format(masha.total_coat_buy))
 print('ИТОГО продуктов куплено: {}'.format(home.total_food))
 print('ИТОГО дней срача: {}'.format(serge.total_dirty_time))
+print('ИТОГО погладили кота: {}'.format(serge.total_petting_cat))
+print('ИТОГО погладили кота: {}'.format(masha.total_petting_cat))
 
 
 ######################################################## Часть вторая
