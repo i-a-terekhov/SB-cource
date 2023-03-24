@@ -1,5 +1,3 @@
-import random
-
 from termcolor import cprint
 from random import randint
 
@@ -165,7 +163,7 @@ class Wife(Human):
             elif self.house.dirty > 90:
                 print('Персонаж {} решил убраться в доме'.format(self.name))
                 self.clean_house()
-            elif self.house.money > 350 and (self.happiness < 80 or random.random() > 0.95):
+            elif self.house.money > 350 and (self.happiness < 80 or randint(1, 10) > 9):
                 print('Персонаж {} решил купить дорогущую шубу'.format(self.name))
                 self.buy_fur_coat()
             else:
@@ -228,8 +226,6 @@ print('ИТОГО шуб куплено: {}'.format(masha.total_coat_buy))
 print('ИТОГО продуктов куплено: {}'.format(home.total_food))
 print('ИТОГО дней срача: {}'.format(serge.total_dirty_time))
 
-
-# TODO после реализации первой части - отдать на проверку учителю
 
 ######################################################## Часть вторая
 #
