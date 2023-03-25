@@ -194,27 +194,45 @@ class Wife(Human):
         self.house.dirty -= volume_of_clean
 
 
-class Child:
+class Child(Human):
 
-    def __init__(self):
-        pass
+    def __init__(self, name, house):
+        super().__init__(name=name, house=house)
 
     def __str__(self):
         return super().__str__()
 
     def act(self):
-        pass
+        self.satiety -= 5
+
+        print('Персонаж {} выбирает что делать...'.format(self.name))
+        if self.satiety < 70:
+            print('Персонаж {} захотел покушать'.format(self.name))
+            if self.house.food_is_end():
+                cprint('В доме закончилась еда!', color='red')
+            else:
+                self.eat()
+        else:
+            print('Персонаж {} захотел поспать'.format(self.name))
+            self.sleep()
+
 
     def eat(self):
-        pass
+        volume_of_food = 10
+        if 10 > self.house.food > 0:
+            volume_of_food = self.house.food
+        self.satiety += volume_of_food + 5  # условие задания +5 из-за затрат 10 ед. на любое действие
+        self.house.food -= volume_of_food
+        print('Персонаж {} покушал на {} ед. еды, осталось еды {}'.format(self.name, volume_of_food, self.house.food))
 
     def sleep(self):
-        pass
+        print('Персонаж {} сладенько спит'.format(self.name))
 
 
 home = House()
 serge = Husband(name='Сережа', house=home)
 masha = Wife(name='Маша', house=home)
+spinogriz = Child(name='Спиногрыз', house=home)
 
 for day in range(365):
     cprint('================== День {} =================='.format(day), color='red')
@@ -226,6 +244,7 @@ for day in range(365):
         masha.act()
     else:
         masha = None
+    spinogriz.act()
     home.act()
 
     if isinstance(serge, Husband) and serge.is_not_death():
@@ -237,6 +256,7 @@ for day in range(365):
     else:
         masha = None
 
+    cprint(str(spinogriz), color='cyan')
     cprint(str(home), color='cyan')
 
 print('ИТОГО заработано: {}'.format(serge.total_earned))
