@@ -296,7 +296,6 @@ class Child(Human):
             print('Персонаж {} захотел поспать'.format(self.name))
             self.sleep()
 
-
     def eat(self):
         volume_of_food = 10
         if 10 > self.house.food > 0:
