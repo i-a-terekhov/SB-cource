@@ -19,44 +19,90 @@
 # Упорядочивание по частоте - по убыванию. Ширину таблицы подберите по своему вкусу
 # Требования к коду: он должен быть готовым к расширению функциональности. Делать сразу на классах.
 
-# TODO здесь ваш код
 import zipfile
-from pprint import pprint
-
-from termcolor import cprint
-
-work_with = 'voyna-i-mir.txt.zip'
-file_name = 'voyna-i-mir.txt'
-
-alfavit = {}
-
-if work_with.endswith('zip'):
-    zfile = zipfile.ZipFile(work_with, 'r')
-    for name in zfile.namelist():
-        if name == 'voyna-i-mir.txt':
-            zfile.extract(name)
-
-with open(file_name, 'r', encoding='cp1251') as file:
-    for line in file:
-        for char in line:
-            if char.isalpha():
-                if char in alfavit:
-                    alfavit[char] += 1
-                else:
-                    alfavit[char] = 1
+import os
 
 
-sort_list = sorted(alfavit.items(), key=lambda item: item[1], reverse=True)
-sum = 0
-print('+{:-^8}+{:-^10}+'.format('', ''))
-print('|{:^8}|{:^10}|'.format('Буква', 'Частота'))
-print('+{:-^8}+{:-^10}+'.format('', ''))
-for i in sort_list:
-    print('|{:^8}|{:^10}|'.format(i[0], i[1]))
-    sum += i[1]
-print('+{:-^8}+{:-^10}+'.format('', ''))
-print('|{:^8}|{:^10}|'.format('Итого', sum))
-print('+{:-^8}+{:-^10}+'.format('', ''))
+class Chatter:
+    """Класс генератора текста на основе изученных файлов"""
+
+    alphabet = {}
+    sort_stat = []
+
+    def __init__(self, file_name):
+        self.file_name = file_name
+        self.out_file_name = 'out.txt'
+
+    def unzip(self):
+        if self.file_name.endswith('zip'):
+            archived_file = zipfile.ZipFile(self.file_name, 'r')
+            for name in archived_file.namelist():
+                if name.endswith('txt'):
+                    archived_file.extract(name)
+        self._connecting_txt_files()
+
+    def _connecting_txt_files(self):
+        open_mode = 'a'
+        if os.path.isfile(self.out_file_name):
+            file_size = os.stat(self.out_file_name).st_size
+            print('Объем текущего файла статистики', file_size, 'Кб')
+            if file_size > 15_000_000:
+                print('Обнуляем файл статистики')
+                open_mode = 'w'
+        else:
+            print('Создаем файл статистики')
+        out_file = open(self.out_file_name, open_mode, encoding='utf8')
+
+        for name in os.listdir('.'):
+            if name.endswith('txt') and name != self.out_file_name:
+                print('Найден файл: ', name)
+                with open(name, 'r') as text:
+                    out_file.write(text.read())
+                out_file.write('\n')
+        out_file.close()
+
+    def get_statistic(self, *args):
+        with open(self.out_file_name, 'r', encoding='utf8') as file:
+            for line in file:
+                for char in line:
+                    if char.isalpha():
+                        if char in self.alphabet:
+                            self.alphabet[char] += 1
+                        else:
+                            self.alphabet[char] = 1
+        self._sort(*args)
+        self._print_stat()
+
+    def _sort(self, selected_method='alphabet_reverse'):
+        sorting_methods = {
+            'frequency_reverse': [1, True],
+            'frequency': [1, False],
+            'alphabet': [0, False],
+            'alphabet_reverse': [0, True]
+        }
+        self.sort_stat = sorted(
+            self.alphabet.items(),
+            key=lambda symbol: symbol[sorting_methods[selected_method][0]],
+            reverse=sorting_methods[selected_method][1]
+        )
+
+    def _print_stat(self):
+        sum = 0
+        print('+{:-^8}+{:-^10}+'.format('', ''))
+        print('|{:^8}|{:^10}|'.format('Буква', 'Частота'))
+        print('+{:-^8}+{:-^10}+'.format('', ''))
+        for i in self.sort_stat:
+            print('|{:^8}|{:^10}|'.format(i[0], i[1]))
+            sum += i[1]
+        print('+{:-^8}+{:-^10}+'.format('', ''))
+        print('|{:^8}|{:^10}|'.format('Итого', sum))
+        print('+{:-^8}+{:-^10}+'.format('', ''))
+
+
+file_for_analysis = 'voyna-i-mir.txt.zip'
+chatter = Chatter(file_name=file_for_analysis)
+chatter.unzip()
+chatter.get_statistic('frequency')
 
 # После выполнения первого этапа нужно сделать упорядочивание статистики
 #  - по частоте по возрастанию
