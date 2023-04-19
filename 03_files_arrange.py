@@ -40,12 +40,9 @@ import zipfile
 class Failer():
     """Класс распределения файлов из папки/архива в новые папки согласно дате создания"""
 
-    def __init__(self):
-        self.source_folder = 'icons.zip'
-        self.resulting_folder = 'icons_by_year'
-        self.delete_source_files = False
-        self.delete_source_archive = False
-        self.temp_folder = 'C:\\temp'
+    def __init__(self, source_folder='icons.zip', resulting_folder='icons_by_year'):
+        self.source_folder = source_folder
+        self.resulting_folder = resulting_folder
 
     def _folder_is_zip(self):
         if self.source_folder.endswith('zip'):
@@ -53,50 +50,39 @@ class Failer():
         else:
             return False
 
-    def read_zip(self):
-        if self._folder_is_zip():
-            os.makedirs('temp', exist_ok=True)
-            with zipfile.ZipFile(self.source_folder, 'r') as zip_file:
-                for each_file in zip_file.infolist():
-                    if not each_file.is_dir():
-                        # Создаем папку для файла на основании метаданных
-                        data_of_create = each_file.date_time[:3]
-                        year, month, day = data_of_create
-                        new_folder = os.path.join(self.resulting_folder, str(year), f'{month:02d}', f'{day:02d}')
-                        os.makedirs(new_folder, exist_ok=True)
-
-                        # Создаем буфер, куда перемещаем файл перед копированием в папку назначения
-                        _, file_name = os.path.split(each_file.filename)
-                        address_of_new_file = os.path.join(new_folder, file_name)
-                        temp_path = os.path.join('temp', file_name)
-                        with zip_file.open(each_file) as old_file, open(temp_path, 'wb') as temp_file:
-                            shutil.copyfileobj(old_file, temp_file)
-                        shutil.move(temp_path, address_of_new_file)
-
-                        # Меняем временные метки
-                        access_time = modification_time = int(time.mktime(each_file.date_time + (0, 0, -1)))
-                        os.utime(address_of_new_file, (access_time, modification_time))
-            shutil.rmtree('temp')
-
-
-    def _make_dirs(self):
-        #TODO
-        None
-
-    def _copy_file(self):
-        #TODO
-        None
-
     def read_address(self):
         if self._folder_is_zip():
-            self.read_zip()
-        # else:
-            #TODO:
-            # self._read_folder()
+            self._read_zip()
+        else:
+            print('Файл не является архивом')
+
+    def _read_zip(self):
+        os.makedirs('temp', exist_ok=True)
+        with zipfile.ZipFile(self.source_folder, 'r') as zip_file:
+            for each_file in zip_file.infolist():
+                if not each_file.is_dir():
+                    # Создаем папку для файла на основании метаданных
+                    data_of_create = each_file.date_time[:3]
+                    year, month, day = data_of_create
+                    new_folder = os.path.join(self.resulting_folder, str(year), f'{month:02d}', f'{day:02d}')
+                    os.makedirs(new_folder, exist_ok=True)
+
+                    # Создаем буфер, куда перемещаем файл перед копированием в папку назначения
+                    _, file_name = os.path.split(each_file.filename)
+                    address_of_new_file = os.path.join(new_folder, file_name)
+                    temp_path = os.path.join('temp', file_name)
+                    with zip_file.open(each_file) as old_file, open(temp_path, 'wb') as temp_file:
+                        shutil.copyfileobj(old_file, temp_file)
+                    shutil.move(temp_path, address_of_new_file)
+
+                    # Меняем временные метки
+                    access_time = modification_time = int(time.mktime(each_file.date_time + (0, 0, -1)))
+                    os.utime(address_of_new_file, (access_time, modification_time))
+        shutil.rmtree('temp')
 
 
 raspredelytor = Failer()
-raspredelytor.read_zip()
+raspredelytor.read_address()
 
 # Усложненное задание (делать по желанию)
 # Нужно обрабатывать zip-файл, содержащий фотографии, без предварительного извлечения файлов в папку.
