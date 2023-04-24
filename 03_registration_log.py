@@ -22,4 +22,58 @@
 # - поле возраст НЕ является числом от 10 до 99: ValueError
 # Вызов метода обернуть в try-except.
 
-# TODO здесь ваш код
+class NotNameError(Exception):
+
+    def __str__(self):
+        return 'Поле Имя содержит символы, отличные от букв'
+
+
+class NotEmailError(Exception):
+
+    def __str__(self):
+        return 'Email не содержит обязательных символов из набора (@, точка)'
+
+
+good_log = 'registrations_good.log'
+bad_log = 'registrations_bad.log'
+
+with open('registrations.txt', 'r', encoding='utf-8') as log_file:
+    for line in log_file:
+        is_errors = False
+        user_data = line.split()
+
+        if len(user_data) != 3:
+            print(f'В строке <{line[:-1]:^35}> не хватает данных')
+            is_errors = True
+            # raise ValueError
+        else:
+            name, email, age = user_data
+
+            if not name.isalpha():
+                print(f'В строке <{line[:-1]:^35}> некорректно значение <  {name:^15} >')
+                is_errors = True
+                # raise NotNameError
+
+            if '.' not in email or '@' not in email:
+                print(f'В строке <{line[:-1]:^35}> некорректно значение < {email:^15} >')
+                is_errors = True
+                # raise NotEmailError
+
+            try:
+                age = int(age)
+                if not 10 < age < 99:
+                    print(f'В строке <{line[:-1]:^35}> некорректно значение < {age:^15} >')
+                    is_errors = True
+                    # raise ValueError
+            except ValueError:
+                print(f'В строке <{line[:-1]:^35}> некорректно значение < {age:^15} >')
+                is_errors = True
+                # raise ValueError
+
+        if is_errors:
+            with open(bad_log, 'a') as log:
+                log.write(line)
+        else:
+            with open(good_log, 'a') as log:
+                log.write(line)
+
