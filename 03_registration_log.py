@@ -34,46 +34,67 @@ class NotEmailError(Exception):
         return 'Email не содержит обязательных символов из набора (@, точка)'
 
 
+class StringValidator:
+
+    def __init__(self, line_input):
+        self.line = line_input
+        self.user_data = self.line.split()
+        self.print_on = True
+
+    def print_glob(self, text):
+        if self.print_on:
+            print(text)
+
+    def is_line_correct(self):
+        are_not_errors = True
+        if len(self.user_data) != 3:
+            self.print_glob(f'В строке <{line[:-1]:^35}> не хватает данных')
+            are_not_errors = False
+            raise ValueError('Данные не соответствуют форме')
+        else:
+            name, email, age = self.user_data
+
+            if not name.isalpha():
+                self.print_glob(f'В строке <{line[:-1]:^35}> некорректно значение <  {name:^15} >')
+                are_not_errors = False
+                raise NotNameError()
+
+            if '.' not in email or '@' not in email:
+                self.print_glob(f'В строке <{line[:-1]:^35}> некорректно значение < {email:^15} >')
+                are_not_errors = False
+                raise NotEmailError()
+
+            # Считаем, что age всегда число и int(age) не вызовет ошибку типа:
+            if not 10 < int(age) < 99:
+                self.print_glob(f'В строке <{line[:-1]:^35}> некорректно значение < {age:^15} >')
+                are_not_errors = False
+                raise ValueError('Указанный возраст не входит в диапазон')
+
+
+        return are_not_errors
+
+
 good_log = 'registrations_good.log'
 bad_log = 'registrations_bad.log'
 
 with open('registrations.txt', 'r', encoding='utf-8') as log_file:
     for line in log_file:
-        is_errors = False
-        user_data = line.split()
+        check = StringValidator(line_input=line)
 
-        if len(user_data) != 3:
-            print(f'В строке <{line[:-1]:^35}> не хватает данных')
-            is_errors = True
-            # raise ValueError
-        else:
-            name, email, age = user_data
+        record_is_good = False
+        try:
+            record_is_good = check.is_line_correct()
+        except ValueError as e:
+            check.print_glob(text=f'__str__ исключения: {e}\n')
+        except NotNameError as e:
+            check.print_glob(text=f'__str__ исключения: {e}\n')
+        except NotEmailError as e:
+            check.print_glob(text=f'__str__ исключения: {e}\n')
 
-            if not name.isalpha():
-                print(f'В строке <{line[:-1]:^35}> некорректно значение <  {name:^15} >')
-                is_errors = True
-                # raise NotNameError
-
-            if '.' not in email or '@' not in email:
-                print(f'В строке <{line[:-1]:^35}> некорректно значение < {email:^15} >')
-                is_errors = True
-                # raise NotEmailError
-
-            try:
-                age = int(age)
-                if not 10 < age < 99:
-                    print(f'В строке <{line[:-1]:^35}> некорректно значение < {age:^15} >')
-                    is_errors = True
-                    # raise ValueError
-            except ValueError:
-                print(f'В строке <{line[:-1]:^35}> некорректно значение < {age:^15} >')
-                is_errors = True
-                # raise ValueError
-
-        if is_errors:
-            with open(bad_log, 'a') as log:
+        if record_is_good:
+            with open(good_log, 'a') as log:
                 log.write(line)
         else:
-            with open(good_log, 'a') as log:
+            with open(bad_log, 'a') as log:
                 log.write(line)
 
