@@ -34,7 +34,6 @@ class PrimeNumbers:
     def __init__(self, n):
         self.n = n
         self.prime_numbers = []
-        self.is_print_all = True
 
     def __iter__(self):
         self.i = 2
