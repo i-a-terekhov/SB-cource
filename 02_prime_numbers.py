@@ -34,30 +34,17 @@ class PrimeNumbers:
     def __init__(self, n):
         self.n = n
         self.prime_numbers = []
-        self.is_print_all = True
-
-    def g_print(self, text, print_all=False):
-        if print_all is True:
-            print(text)
 
     def __iter__(self):
         self.i = 2
         return self
 
     def __next__(self):
-        self.g_print('-' * 100, self.is_print_all)
         while self.i <= self.n:
-            self.g_print(f'Рассматриваем число {self.i}', self.is_print_all)
             for prime in self.prime_numbers:
-                self.g_print(f'Берем число {prime} из последовательности {self.prime_numbers}', self.is_print_all)
-                self.g_print(f'Делим нацело {self.i} на {prime}, получаем результат {self.i % prime}',
-                             self.is_print_all)
                 if self.i % prime == 0:
-                    self.g_print(f'Число {self.i} нацело разделилось на {prime} - такое нам не подходит',
-                                 self.is_print_all)
                     break
             else:
-                self.g_print(f'Добавляем число {self.i} в лист {self.prime_numbers}', self.is_print_all)
                 self.prime_numbers.append(self.i)
                 result = self.i
                 self.i += 1
