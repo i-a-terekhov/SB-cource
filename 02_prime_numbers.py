@@ -2,17 +2,25 @@
 
 
 # Есть функция генерации списка простых чисел
+# import time
+#
+#
+# def get_prime_numbers(n):
+#     prime_numbers = []
+#     timeofstart = time.time()
+#     timezero = time.time()
+#     for number in range(2, n+1):
+#         for prime in prime_numbers:
+#             if number % prime == 0:
+#                 break
+#         else:
+#             prime_numbers.append(number)
+#             timeend = time.time()
+#             print(f'{number:10} - {round(((timeend-timezero)*1_000_000)):7} - {round(((timeend-timeofstart)*1)):5}')
+#             timezero = timeend
+#     return prime_numbers
 
-
-def get_prime_numbers(n):
-    prime_numbers = []
-    for number in range(2, n+1):
-        for prime in prime_numbers:
-            if number % prime == 0:
-                break
-        else:
-            prime_numbers.append(number)
-    return prime_numbers
+# print(get_prime_numbers(1_000))
 
 # Часть 1
 # На основе алгоритма get_prime_numbers создать класс итерируемых обьектов,
@@ -22,11 +30,43 @@ def get_prime_numbers(n):
 
 
 class PrimeNumbers:
-    pass
-    # TODO здесь ваш код
+
+    def __init__(self, n):
+        self.n = n
+        self.prime_numbers = []
+        self.is_print_all = True
+
+    def g_print(self, text, print_all=False):
+        if print_all is True:
+            print(text)
+
+    def __iter__(self):
+        self.i = 2
+        return self
+
+    def __next__(self):
+        self.g_print('-' * 100, self.is_print_all)
+        while self.i <= self.n:
+            self.g_print(f'Рассматриваем число {self.i}', self.is_print_all)
+            for prime in self.prime_numbers:
+                self.g_print(f'Берем число {prime} из последовательности {self.prime_numbers}', self.is_print_all)
+                self.g_print(f'Делим нацело {self.i} на {prime}, получаем результат {self.i % prime}',
+                             self.is_print_all)
+                if self.i % prime == 0:
+                    self.g_print(f'Число {self.i} нацело разделилось на {prime} - такое нам не подходит',
+                                 self.is_print_all)
+                    break
+            else:
+                self.g_print(f'Добавляем число {self.i} в лист {self.prime_numbers}', self.is_print_all)
+                self.prime_numbers.append(self.i)
+                result = self.i
+                self.i += 1
+                return result
+            self.i += 1
+        raise StopIteration()
 
 
-prime_number_iterator = PrimeNumbers(n=10000)
+prime_number_iterator = PrimeNumbers(n=1000)
 for number in prime_number_iterator:
     print(number)
 
@@ -41,9 +81,8 @@ def prime_numbers_generator(n):
     pass
     # TODO здесь ваш код
 
-
-for number in prime_numbers_generator(n=10000):
-    print(number)
+# for number in prime_numbers_generator(n=10000):
+#     print(number)
 
 
 # Часть 3
