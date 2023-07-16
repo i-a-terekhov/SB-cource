@@ -74,3 +74,27 @@
 #         <обработка данных>
 
 # TODO написать код в однопоточном/однопроцессорном стиле
+
+import os
+import csv
+
+
+class TickerHandler:
+
+    def __init__(self, directory=None):
+        self.directory = directory
+        self.tickers = {}
+
+    def run(self):
+        for root, dirs, files in os.walk(self.directory):
+            for file in files:
+                if file.endswith(".csv"):
+                    filename = root + "\\" + file
+                    with open(filename, encoding="utf-8") as r_file:
+                        file_reader = csv.reader(r_file, delimiter=",")
+                        for row in file_reader:
+                            print(row)
+
+
+Handler = TickerHandler('trades')
+Handler.run()
