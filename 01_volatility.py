@@ -77,6 +77,7 @@
 
 import os
 import csv
+from pprint import pprint
 
 
 class TickerHandler:
@@ -90,10 +91,27 @@ class TickerHandler:
             for file in files:
                 if file.endswith(".csv"):
                     filename = root + "\\" + file
-                    with open(filename, encoding="utf-8") as r_file:
-                        file_reader = csv.reader(r_file, delimiter=",")
+                    with open(filename, encoding="utf-8") as csv_file:
+                        max_price = 0.00001
+                        min_price = 10000000.00001
+                        file_reader = csv.reader(csv_file, delimiter=",")
                         for row in file_reader:
-                            print(row)
+                            ticker, time, price, quantity = row
+                            if price == "PRICE":
+                                continue
+                            if float(price) > max_price:
+                                max_price = float(price)
+                            if float(price) < min_price:
+                                min_price = float(price)
+                        average_price = (max_price + min_price) / 2
+                        volatility = (max_price - min_price) / average_price * 100
+                        self.tickers[ticker] = {
+                            "max_price": round(max_price, 3),
+                            "min_price": round(min_price, 3),
+                            "average_price": round(average_price, 3),
+                            "volatility": round(volatility, 1)}
+        pprint(self.tickers)
+
 
 
 Handler = TickerHandler('trades')
