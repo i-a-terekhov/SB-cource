@@ -72,11 +72,9 @@ import operator
 #     def run(self):
 #         <обработка данных>
 
-# TODO написать код в однопоточном/однопроцессорном стиле
 
 import os
 import csv
-from pprint import pprint
 
 
 class TickerHandler:
