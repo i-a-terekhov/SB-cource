@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import operator
+
 # Описание предметной области:
 #
 # При торгах на бирже совершаются сделки - один купил, второй продал.
@@ -73,8 +73,10 @@ import operator
 #         <обработка данных>
 
 
+import operator
 import os
 import csv
+import time
 
 
 class TickerHandler:
@@ -150,5 +152,10 @@ class TickerHandler:
                 print(f"\t {ticker}", end="")
 
 
+started_at = time.time()
 Handler = TickerHandler('trades')
 Handler.run()
+ended_at = time.time()
+elapsed = round(ended_at - started_at, 4)
+print(f"\n\n")
+print(f'Функция работала {elapsed} секунд(ы)')

@@ -24,13 +24,16 @@
 import operator
 import os
 import csv
+from threading import Thread
+import time
 
 
-class TickerHandler:
+class TickerHandler(Thread):
     START_MAX_DIGIT = 0.00001
     START_MIN_DIGIT = 10000000.00001
 
-    def __init__(self, directory=None):
+    def __init__(self, directory=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.directory = directory
         self.tickers = {}
         self.zero_tickers = []
@@ -38,11 +41,16 @@ class TickerHandler:
         self.slice_min = []
 
     def run(self):
+        threads = []
         for root, dirs, files in os.walk(self.directory):
             for file in files:
                 if file.endswith(".csv"):
                     filename = root + "\\" + file
-                    self.csv_reader(filename)
+                    thread = Thread(target=self.csv_reader, args=(filename, ))
+                    thread.start()
+                    threads.append(thread)
+        for thread in threads:
+            thread.join()
         self.find_extreme_volatility()
 
     def csv_reader(self, filename):
@@ -98,5 +106,10 @@ class TickerHandler:
                 print(f"\t {ticker}", end="")
 
 
+started_at = time.time()
 Handler = TickerHandler('trades')
 Handler.run()
+ended_at = time.time()
+elapsed = round(ended_at - started_at, 4)
+print(f"\n\n")
+print(f'Функция работала {elapsed} секунд(ы)')
