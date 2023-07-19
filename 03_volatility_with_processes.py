@@ -17,40 +17,45 @@
 #       ТИКЕР7, ТИКЕР8, ТИКЕР9, ТИКЕР10, ТИКЕР11, ТИКЕР12
 # Волатильности указывать в порядке убывания. Тикеры с нулевой волатильностью упорядочить по имени.
 #
-# TODO Внимание! это задание можно выполнять только после зачета lesson_012/02_volatility_with_threads.py !!!
 
-# TODO тут ваш код в многопроцессном стиле
 
 import operator
 import os
 import csv
-from threading import Thread
+from multiprocessing import Process, Queue
 import time
 
 
-class TickerHandler(Thread):
+class TickerHandler(Process):
     START_MAX_DIGIT = 0.00001
     START_MIN_DIGIT = 10000000.00001
 
-    def __init__(self, directory=None, *args, **kwargs):
+    def __init__(self, directory=None, result_queue=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.directory = directory
+        self.result_queue = result_queue
         self.tickers = {}
         self.zero_tickers = []
         self.slice_max = []
         self.slice_min = []
 
     def run(self):
-        threads = []
+        processes = []
         for root, dirs, files in os.walk(self.directory):
             for file in files:
                 if file.endswith(".csv"):
                     filename = root + "\\" + file
-                    thread = Thread(target=self.csv_reader, args=(filename, ))
-                    thread.start()
-                    threads.append(thread)
-        for thread in threads:
-            thread.join()
+                    process = Process(target=self.csv_reader, args=(filename,))
+                    process.start()
+                    processes.append(process)
+        for process in processes:
+            process.join()
+        self.retrieve_results()
+
+    def retrieve_results(self):
+        while not self.result_queue.empty():
+            ticker, volatility = self.result_queue.get()
+            self.tickers[ticker] = volatility
         self.find_extreme_volatility()
 
     def csv_reader(self, filename):
@@ -68,7 +73,7 @@ class TickerHandler(Thread):
                     min_price = float(price)
             average_price = (max_price + min_price) / 2
             volatility = (max_price - min_price) / average_price * 100
-            self.tickers[ticker] = round(volatility, 2)
+            self.result_queue.put((ticker, round(volatility, 2)))
 
     def find_extreme_volatility(self):
         sorted_tickers = list(sorted(self.tickers.items(), key=operator.itemgetter(1)))
@@ -97,19 +102,16 @@ class TickerHandler(Thread):
             print("\t", ticker, "-", volatility, " %")
 
         print("Нулевая волатильность:")
-        i = 0
-        for ticker in self.zero_tickers:
-            if i > 0:
-                print(f", {ticker}", end="")
-            else:
-                i += 1
-                print(f"\t {ticker}", end="")
+        if self.zero_tickers:
+            print("\t", ", ".join(self.zero_tickers))
 
 
-started_at = time.time()
-Handler = TickerHandler('trades')
-Handler.run()
-ended_at = time.time()
-elapsed = round(ended_at - started_at, 4)
-print(f"\n\n")
-print(f'Функция работала {elapsed} секунд(ы)')
+if __name__ == '__main__':
+    started_at = time.time()
+    result_queue = Queue()
+    Handler = TickerHandler('trades', result_queue=result_queue)
+    Handler.run()
+    ended_at = time.time()
+    elapsed = round(ended_at - started_at, 4)
+    print(f"\n\n")
+    print(f'Функция работала {elapsed} секунд(ы)')
