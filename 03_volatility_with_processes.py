@@ -110,7 +110,11 @@ if __name__ == '__main__':
     started_at = time.time()
     result_queue = Queue()
     Handler = TickerHandler('trades', result_queue=result_queue)
-    Handler.run()
+    # Handler.run() # данная команда приведет к тому, что класс Process "не сработает",
+    # параллельный процесс не запустится
+    Handler.start()  # при использовании класса multiprocessing.Process, основной метод,
+    # который выполняется в созданном процессе, должен называться именно run()
+    Handler.join()
     ended_at = time.time()
     elapsed = round(ended_at - started_at, 4)
     print(f"\n\n")
