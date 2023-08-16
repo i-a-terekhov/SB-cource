@@ -57,32 +57,31 @@ def game_result_generator():
 
 def get_score(game_result):
     for game_number in range(len(game_result)):
-        game_score = 0
-        frame_summ = 0
+        game_frames = []
 
+        frame = []
+        toss = 1
         for char in game_result[game_number]:
-            if char not in "X-/123456789":
-                # raise Exception(f"Некорректный символ {char} в {game_result[game_number]}")
-                pass
-            frame_toss = 1
+            # if char not in "X-/123456789":
+            #     # raise Exception(f"Некорректный символ {char} в {game_result[game_number]}")
+            #     print(f"АНОМАЛИЯ ---{game_result[game_number]}-----------------------------------------------------")
+            #     # pass
             if char == "X":
-                game_score += 20
-                frame_summ += 1
-                continue
-            if char in "123456789":
-                game_score += int(char)
-                frame_toss += 1
-            elif char == "-":
-                frame_toss += 1
-            elif char == "/":
-                # TODO Ошибка в логике:
-                raise Exception(f"Некорректный символ {char} в {game_result[game_number]}")
+                game_frames.append("X")
+            else:
+                if toss == 1:
+                    frame.append(char)
+                    toss += 1
+                else:
+                    toss = 1
+                    frame.append(char)
+                    game_frames.append(frame)
+                    frame = []
+        print(f"Игра {game_result[game_number]} --> {game_frames}")
+    print()
 
-            if frame_toss == 2:
-                if char == "X":
-                    raise Exception(f"Некорректная запись фреймов в {game_result[game_number]}")
-                elif char == "/":
-                    game_score = - game_result[game_number][char - 1] + 15
+
+
 
 
 list_of_result = game_result_generator()
