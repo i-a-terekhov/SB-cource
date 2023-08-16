@@ -1,6 +1,26 @@
 from random import randint
 
 
+def add_mistakes(game_result):
+    def wrap(*args, **kwargs):
+
+        maybe_symbols = "XXX///---000123456789ABCDIFG"
+        game_results = game_result(*args, **kwargs)
+        replace_count = 0
+        for frame_number in range(len(game_results)):
+            if randint(1, 100) > 90:
+                replace_count += 1
+                old_frame = game_results[frame_number]
+                old_char = randint(0, len(old_frame) - 1)
+                new_char = randint(0, len(maybe_symbols) - 1)
+                new_frame = old_frame[:old_char] + maybe_symbols[new_char] + old_frame[old_char + 1:]
+                game_results[frame_number] = new_frame
+        print(f"Всего испорчено {replace_count} фреймов")
+        return game_results
+    return wrap
+
+
+@add_mistakes
 def game_result_generator():
     skittles = 10
     game_results = []
