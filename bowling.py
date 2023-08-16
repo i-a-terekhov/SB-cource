@@ -7,15 +7,15 @@ def add_mistakes(game_result):
         maybe_symbols = "XXX///---000123456789ABCDIFG"
         game_results = game_result(*args, **kwargs)
         replace_count = 0
-        for frame_number in range(len(game_results)):
+        for game_number in range(len(game_results)):
             if randint(1, 100) > 90:
                 replace_count += 1
-                old_frame = game_results[frame_number]
-                old_char = randint(0, len(old_frame) - 1)
+                old_game = game_results[game_number]
+                old_char = randint(0, len(old_game) - 1)
                 new_char = randint(0, len(maybe_symbols) - 1)
-                new_frame = old_frame[:old_char] + maybe_symbols[new_char] + old_frame[old_char + 1:]
-                game_results[frame_number] = new_frame
-        print(f"Всего испорчено {replace_count} фреймов")
+                new_game = old_game[:old_char] + maybe_symbols[new_char] + old_game[old_char + 1:]
+                game_results[game_number] = new_game
+        print(f"Всего испорчено {replace_count} игр")
         return game_results
     return wrap
 
@@ -25,7 +25,7 @@ def game_result_generator():
     skittles = 10
     game_results = []
 
-    for game_no in range(100):
+    for game_no in range(10000):
         frames_in_game = 10 if randint(1, 100) > 10 else randint(6, 9)
         game_result = ''
 
@@ -51,8 +51,39 @@ def game_result_generator():
     return game_results
 
 
+# TODO 1. написать обработчик результатов
+# некорректные данные должны вызывать исключения
+# «Х» – 20 очков, «4/» - 15 очков, «34» – сумма 3+4=7
+
 def get_score(game_result):
-    pass
+    for game_number in range(len(game_result)):
+        game_score = 0
+        frame_summ = 0
+
+        for char in game_result[game_number]:
+            if char not in "X-/123456789":
+                # raise Exception(f"Некорректный символ {char} в {game_result[game_number]}")
+                pass
+            frame_toss = 1
+            if char == "X":
+                game_score += 20
+                frame_summ += 1
+                continue
+            if char in "123456789":
+                game_score += int(char)
+                frame_toss += 1
+            elif char == "-":
+                frame_toss += 1
+            elif char == "/":
+                # TODO Ошибка в логике:
+                raise Exception(f"Некорректный символ {char} в {game_result[game_number]}")
+
+            if frame_toss == 2:
+                if char == "X":
+                    raise Exception(f"Некорректная запись фреймов в {game_result[game_number]}")
+                elif char == "/":
+                    game_score = - game_result[game_number][char - 1] + 15
 
 
-print(game_result_generator())
+list_of_result = game_result_generator()
+get_score(game_result=list_of_result)
