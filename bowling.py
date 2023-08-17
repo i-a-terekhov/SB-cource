@@ -51,21 +51,13 @@ def game_result_generator():
     return game_results
 
 
-# TODO 1. написать обработчик результатов
-# некорректные данные должны вызывать исключения
-# «Х» – 20 очков, «4/» - 15 очков, «34» – сумма 3+4=7
-
 def get_score(game_result):
-    for game_number in range(len(game_result)):
+    reformat_game_result = []
+    for game in game_result:
         game_frames = []
-
         frame = []
         toss = 1
-        for char in game_result[game_number]:
-            # if char not in "X-/123456789":
-            #     # raise Exception(f"Некорректный символ {char} в {game_result[game_number]}")
-            #     print(f"АНОМАЛИЯ ---{game_result[game_number]}-----------------------------------------------------")
-            #     # pass
+        for char in game:
             if char == "X":
                 game_frames.append("X")
             else:
@@ -73,15 +65,36 @@ def get_score(game_result):
                     frame.append(char)
                     toss += 1
                 else:
-                    toss = 1
                     frame.append(char)
                     game_frames.append(frame)
                     frame = []
-        print(f"Игра {game_result[game_number]} --> {game_frames}")
-    print()
+                    toss = 1
+        reformat_game_result.append(game_frames)
+        # print(f"Игра {game} --> {game_frames} ---> {0} очков")
 
+    for game in reformat_game_result:
+        game_score = 0
+        if len(game) != 10:
+            raise Exception(f"Игра не окончена {game}")
+        for frame in game:
+            if frame == "X":
+                game_score += 20
+            else:
+                if frame[0] == "-":
+                    frame[0] = "0"
+                if frame[1] == "-":
+                    frame[1] = "0"
 
+                if frame[0] == "/":
+                    raise Exception(f"Некорректная запись в игре {game}, во фрейме {frame}")
+                elif frame[1] == "/":
+                    game_score += 15
 
+                elif frame[0] not in "1234567890" or frame[0] not in "1234567890":
+                    raise Exception(f"Некорректный символ в игре {game}, во фрейме {frame}")
+                else:
+                    game_score += int(frame[0]) + int(frame[1])
+        print(f"Игра {game} ---> {game_score} очков")
 
 
 list_of_result = game_result_generator()
