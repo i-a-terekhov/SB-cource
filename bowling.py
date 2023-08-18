@@ -20,6 +20,20 @@ def add_mistakes(game_result):
     return wrap
 
 
+def search_exceptions(get_score_function):
+    def wrap(game_result):
+
+        new_game_results = []
+        for i in game_result:
+            try:
+                get_scores = get_score_function([i])
+                new_game_results.append(get_scores)
+            except Exception as e:
+                print(f"Исключение: {e}")
+        return new_game_results
+    return wrap
+
+
 @add_mistakes
 def game_result_generator():
     skittles = 10
@@ -51,6 +65,7 @@ def game_result_generator():
     return game_results
 
 
+@search_exceptions
 def get_score(game_result):
     reformat_game_result = []
     for game in game_result:
@@ -90,7 +105,7 @@ def get_score(game_result):
                 elif frame[1] == "/":
                     game_score += 15
 
-                elif frame[0] not in "1234567890" or frame[0] not in "1234567890":
+                elif frame[0] not in "1234567890" or frame[1] not in "1234567890":
                     raise Exception(f"Некорректный символ в игре {game}, во фрейме {frame}")
                 else:
                     game_score += int(frame[0]) + int(frame[1])
