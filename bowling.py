@@ -100,10 +100,11 @@ def get_score(game_result):
                 raise Exception(f"Некорректный символ в игре {game_result}, во фрейме {frame}")
             else:
                 game_score += int(frame[0]) + int(frame[1])
-    print(f"Игра {game_frames} ---> {game_score} очков")
+    # print(f"Игра {game_frames} ---> {game_score} очков")
     return game_score
 
 
-list_of_results = game_result_generator()
-for game in list_of_results:
-    get_score(game_result=game)
+if __name__ == '__main__':
+    list_of_results = game_result_generator()
+    for game in list_of_results:
+        get_score(game_result=game)

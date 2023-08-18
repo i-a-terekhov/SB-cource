@@ -1,4 +1,5 @@
 import unittest
+import random
 import bowling
 
 
@@ -7,10 +8,41 @@ class TestBowling(unittest.TestCase):
 
     # проверяющие методы должны начинаться с test_
     def test_normal(self):
-        # запускаем тестируемую функцию
-        result = bowling.get_score(game_result='XXXXXXXXXX')
-        # проверяем что она вернула
-        self.assertEqual(result, 201)
+
+        symbols = '-123456789'
+        for i in range(1000):
+            game = ''
+            points = 0
+
+            for j in range(10):
+                if random.randint(1, 100) > 95:
+                    game += 'X'
+                    points += 20
+                    continue
+
+                frame = ''
+                symb = symbols[random.randint(0, len(symbols) - 1)]
+                frame += symb
+                if symb == '-':
+                    symb = '0'
+                points += int(symb)
+
+                if random.randint(1, 10) > 9:
+                    frame += '/'
+                    points += 15 - int(symb)
+                else:
+                    symb = symbols[random.randint(0, len(symbols) - 1)]
+                    frame += symb
+                    if symb == '-':
+                        symb = '0'
+                    points += int(symb)
+
+                game += frame
+
+            result = bowling.get_score(game_result=game)
+            print(f'Получили запись {game}, соответсвующую {points} очкам')
+            self.assertEqual(result, points)
+
 
     # # в именах методов-проверок очень желательно указывать
     # # какой вариант они проверяют
