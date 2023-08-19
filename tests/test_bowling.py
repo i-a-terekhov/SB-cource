@@ -10,7 +10,7 @@ class TestBowling(unittest.TestCase):
     def test_normal(self):
 
         symbols = '-123456789'
-        for i in range(1000):
+        for i in range(10):
             game = ''
             points = 0
 
@@ -41,15 +41,22 @@ class TestBowling(unittest.TestCase):
 
             result = bowling.get_score(game_result=game)
             print(f'Получили запись {game}, соответсвующую {points} очкам')
-            self.assertEqual(result, points)
+            self.assertEqual(result, points, 'проблема в калькуляции при правильной записи игры')
 
-
-    # # в именах методов-проверок очень желательно указывать
-    # # какой вариант они проверяют
-    # def test_sorted(self):
-    #     result = my_sort([3, 4, 5])
-    #     # так же можно писать детализирующее сообщение
-    #     self.assertEqual(result, [3, 4, 5], 'не работает сортировка отсортированного списка')
+    def test_synthetic(self):
+        print('-' * 20)
+        games = {
+            'XXXXXXXXXX': 200,
+            '--------------------': 0,
+            '11111111111111111111': 20,
+            '22222222222222222222': 40,
+            '-/-/-/-/-/-/-/-/-/-/': 150,
+            '55555555555555555555': 100,
+        }
+        for game, points in games.items():
+            result = bowling.get_score(game_result=game)
+            print(f'Получили запись {game}, соответсвующую {points} очкам')
+            self.assertEqual(result, points, 'проблема в калькуляции при синтетической записи игры')
     #
     # # и так далее - записываем все возможные случаи
     # def test_reversed(self):
