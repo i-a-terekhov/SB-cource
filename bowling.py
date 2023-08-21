@@ -99,7 +99,11 @@ def get_score(game_result):
             elif frame[0] not in "1234567890" or frame[1] not in "1234567890":
                 raise Exception(f"Некорректный символ в игре {game_result}, во фрейме {frame}")
             else:
-                game_score += int(frame[0]) + int(frame[1])
+                frame_summ = int(frame[0]) + int(frame[1])
+                if frame_summ > 10:
+                    raise Exception(f"Избыточная сумма очков в игре {game_result}, во фрейме {frame}")
+                else:
+                    game_score += frame_summ
     # print(f"Игра {game_frames} ---> {game_score} очков")
     return game_score
 

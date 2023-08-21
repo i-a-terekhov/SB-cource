@@ -8,7 +8,8 @@ class TestBowling(unittest.TestCase):
 
     # проверяющие методы должны начинаться с test_
     def test_normal(self):
-
+        # TODO исправить ошибку появления во фрейме очков, больше чем всего кеглей
+        print('-' * 20)
         symbols = '-123456789'
         for i in range(10):
             game = ''
@@ -57,19 +58,30 @@ class TestBowling(unittest.TestCase):
             result = bowling.get_score(game_result=game)
             print(f'Получили запись {game}, соответсвующую {points} очкам')
             self.assertEqual(result, points, 'проблема в калькуляции при синтетической записи игры')
-    #
-    # # и так далее - записываем все возможные случаи
-    # def test_reversed(self):
-    #     result = my_sort([3, 2, 1])
-    #     self.assertEqual(result, [1, 2, 3])
-    #
-    # def test_empty(self):
-    #     result = my_sort([])
-    #     self.assertEqual(result, [])
-    #
-    # def test_with_negative(self):
-    #     result = my_sort([9, 3, -7, 2])
-    #     self.assertEqual(result, [-7, 2, 3, 9])
+
+    def test_more_points_for_game(self):
+        print('-' * 20)
+        games = {
+            'XXXXXXXXXXXXXXXX': None,
+            '---------------': None,
+            '1111111111111111111111': None,
+            '22222222222222222222222': None,
+        }
+        for game, points in games.items():
+            result = bowling.get_score(game_result=game)
+            print(f'Получили запись {game}, соответсвующую {points} очкам')
+            self.assertEqual(result, points, 'некорректные входные данные не были выявлены тестируемой функцией')
+
+    def test_more_points_for_frame(self):
+        print('-' * 20)
+        games = {
+            '99999999999999999999': None,
+            '22222222222222222222222': None,
+        }
+        for game, points in games.items():
+            result = bowling.get_score(game_result=game)
+            print(f'Получили запись {game}, соответсвующую {points} очкам')
+            self.assertEqual(result, points, 'избыток очков во фрейме не был выявлен тестируемой функцией')
 
 
 if __name__ == '__main__':
