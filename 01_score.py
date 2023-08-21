@@ -39,7 +39,6 @@ def main():
 
     arguments = parser.parse_args()
     if arguments.result is None:
-        print('dfsf')
         bowling.make_some_games()
     else:
         bowling.get_score(arguments.result)
