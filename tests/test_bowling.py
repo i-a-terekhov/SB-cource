@@ -7,11 +7,10 @@ class TestBowling(unittest.TestCase):
     # нужно отнаследоваться от этого класса, что бы заработала магия тестирования
 
     # проверяющие методы должны начинаться с test_
-    def test_normal(self):
-        # TODO исправить ошибку появления во фрейме очков, больше чем всего кеглей
-        print('-' * 20)
-        symbols = '-123456789'
-        for i in range(10):
+    def test_1_normal(self):
+        print('-' * 20, 'test_1_normal', '-' * 20)
+        symbols = '-0123456789'
+        for i in range(1000):
             game = ''
             points = 0
 
@@ -32,7 +31,7 @@ class TestBowling(unittest.TestCase):
                     frame += '/'
                     points += 15 - int(symb)
                 else:
-                    symb = symbols[random.randint(0, len(symbols) - 1)]
+                    symb = symbols[random.randint(0, len(symbols) - 1 - int(symb))]
                     frame += symb
                     if symb == '-':
                         symb = '0'
@@ -44,8 +43,8 @@ class TestBowling(unittest.TestCase):
             print(f'Получили запись {game}, соответсвующую {points} очкам')
             self.assertEqual(result, points, 'проблема в калькуляции при правильной записи игры')
 
-    def test_synthetic(self):
-        print('-' * 20)
+    def test_2_synthetic(self):
+        print('-' * 20, 'test_2_synthetic', '-' * 20)
         games = {
             'XXXXXXXXXX': 200,
             '--------------------': 0,
@@ -59,8 +58,8 @@ class TestBowling(unittest.TestCase):
             print(f'Получили запись {game}, соответсвующую {points} очкам')
             self.assertEqual(result, points, 'проблема в калькуляции при синтетической записи игры')
 
-    def test_more_points_for_game(self):
-        print('-' * 20)
+    def test_3_more_points_for_game(self):
+        print('-' * 20, 'test_3_more_points_for_game', '-' * 20)
         games = {
             'XXXXXXXXXXXXXXXX': None,
             '---------------': None,
@@ -72,8 +71,8 @@ class TestBowling(unittest.TestCase):
             print(f'Получили запись {game}, соответсвующую {points} очкам')
             self.assertEqual(result, points, 'некорректные входные данные не были выявлены тестируемой функцией')
 
-    def test_more_points_for_frame(self):
-        print('-' * 20)
+    def test_4_more_points_for_frame(self):
+        print('-' * 20, 'test_4_more_points_for_frame', '-' * 20)
         games = {
             '99999999999999999999': None,
             '22222222222222222222222': None,

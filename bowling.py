@@ -35,7 +35,7 @@ def game_result_generator():
     skittles = 10
     game_results = []
 
-    for game_no in range(10000):
+    for game_no in range(100):
         frames_in_game = 10 if randint(1, 100) > 10 else randint(6, 9)
         game_result = ''
 
