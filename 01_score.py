@@ -30,8 +30,23 @@
 #   Количество очков для результатов ХХХ - УУУ.
 
 import argparse
+import bowling
 
 
+def main():
+    parser = argparse.ArgumentParser(description="Bowling parser")
+    parser.add_argument('--result', dest="result", help='start standart generate some results')
+
+    arguments = parser.parse_args()
+    if arguments.result is None:
+        print('dfsf')
+        bowling.make_some_games()
+    else:
+        bowling.get_score(arguments.result)
+
+
+if __name__ == "__main__":
+    main()
 
 
 # При написании кода помнить, что заказчик может захотеть доработок и новых возможностей...

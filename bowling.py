@@ -21,12 +21,13 @@ def add_mistakes(game_result):
 
 
 def search_exceptions(get_score_function):
-    def wrap(*args, **kwargs):
+    def wrap(game_result):
         try:
-            score = get_score_function(*args, **kwargs)
+            score = get_score_function(game_result)
             return score
         except Exception as e:
-            print(f"Исключение: {e}")
+            print(f'Игра: {game_result}')
+            print(f"\t\t\t\tИсключение! {e}")
     return wrap
 
 
@@ -67,13 +68,15 @@ def get_score(game_result):
     frame = []
     toss = 1
     for char in game_result:
-        if char == "X":
+        if char == "X" and toss == 2:
+            raise Exception(f"Символ X в игре {game_result} стоит на втором месте во фрейме")
+        elif char == "X":
             game_frames.append("X")
         else:
             if toss == 1:
                 frame.append(char)
-                toss += 1
-            else:
+                toss = 2
+            elif toss == 2:
                 frame.append(char)
                 game_frames.append(frame)
                 frame = []
@@ -104,11 +107,15 @@ def get_score(game_result):
                     raise Exception(f"Избыточная сумма очков в игре {game_result}, во фрейме {frame}")
                 else:
                     game_score += frame_summ
-    # print(f"Игра {game_frames} ---> {game_score} очков")
+    print(f"Игра: {game_result}\n\t\t\t\t---> {game_score} очков")
     return game_score
 
 
-if __name__ == '__main__':
+def make_some_games():
     list_of_results = game_result_generator()
     for game in list_of_results:
         get_score(game_result=game)
+
+
+if __name__ == '__main__':
+    make_some_games()
