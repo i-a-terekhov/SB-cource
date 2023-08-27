@@ -49,16 +49,31 @@ remaining_time = '1234567890.0987654321'
 field_names = ['current_location', 'current_experience', 'current_date']
 
 import json
+from pprint import pprint
 
 
 with open("rpg.json", "r") as rpg_file:
     rpg_data = json.load(rpg_file)
-    print('Полученный json преобразован в объект', type(rpg_data))  # <class 'dict'>
+    # print('Полученный json преобразован в объект', type(rpg_data))  # <class 'dict'>
 
-rpg_dumps = json.dumps(rpg_data)  # dumps - запись в переменную
+# rpg_dumps = json.dumps(rpg_data)  # dumps - запись в переменную в виде строки <- памятка
 # print(type(rpg_dumps))
+
+next_step = 'Location_0_tm0'
+for i in range(1):
+    current_step = next_step
+    varianti = rpg_data[current_step]
+    print(f'Вы находитесь в локации {current_step}, перед вами выбор:')
+    for j in varianti:
+        if isinstance(j, str):
+            print(j)
+        else:
+            for _ in j.keys():
+                print(_[:11])
+
+
 
 with open("rpg2.json", "w") as write_file:
     json.dump(rpg_data, write_file, indent=2)  # dump - запись в переменную
-    print('Полученный объект', type(rpg_data), 'преобразован в json')
+    # print('Полученный объект', type(rpg_data), 'преобразован в json')
 
