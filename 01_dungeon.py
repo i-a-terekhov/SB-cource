@@ -48,19 +48,17 @@ remaining_time = '1234567890.0987654321'
 # если изначально не писать число в виде строки - теряется точность!
 field_names = ['current_location', 'current_experience', 'current_date']
 
-
 import json
-from pprint import pprint
 
 
 with open("rpg.json", "r") as rpg_file:
-    rpg = rpg_file.read()
-    # print(rpg)
+    rpg_data = json.load(rpg_file)
+    print('Полученный json преобразован в объект', type(rpg_data))  # <class 'dict'>
+
+rpg_dumps = json.dumps(rpg_data)  # dumps - запись в переменную
+# print(type(rpg_dumps))
 
 with open("rpg2.json", "w") as write_file:
-    json.dump(rpg, write_file)
+    json.dump(rpg_data, write_file, indent=2)  # dump - запись в переменную
+    print('Полученный объект', type(rpg_data), 'преобразован в json')
 
-json_data_with_indent = json.dumps(rpg, indent=0)
-print(f'Та же строка, но уже с отступами, в удобном виде: {json_data_with_indent}')
-
-# Учитывая время и опыт, не забывайте о точности вычислений!
