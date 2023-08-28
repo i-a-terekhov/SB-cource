@@ -60,38 +60,53 @@ with open("rpg.json", "r") as rpg_file:
 # print(type(rpg_dumps))
 
 current_location = rpg_data
-loc_name = list(current_location.keys())[0]
+current_location_name = list(current_location.keys())[0]
 game_over = False
 while not game_over:
-    print(loc_name)
-    location_sostav = current_location[loc_name]
-    num_loc = 0
-    raznie_locatsii = {}
-    for j in location_sostav:
-        if isinstance(j, str):
-            print(f'Вы увидели монстра: {j}')
-        elif isinstance(j, list):
-            print('Вы увидели группу монстров: ', end='')
-            for _ in j:
+    print(f'Вы находитесь в {current_location_name}')
+    location_content = current_location[current_location_name]
+    location_num_in_list = 0
+    next_step_locations = {}
+    next_loc_exist = True
+    monster_attack = False
+    print('Внутри вы видите:')
+    for entity in location_content:
+        if isinstance(entity, str):
+            print(f'-- Монстра: {entity}')
+            monster_attack = True
+        elif isinstance(entity, list):
+            print('-- Группу монстров: ', end='')
+            for _ in entity:
                 print(_, end=' ')
             print()
+            monster_attack = True
         else:
-            name = list(j.keys())[0]
-            raznie_locatsii[name] = num_loc
-        num_loc += 1
+            one_of_locations = list(entity.keys())[0]
+            next_step_locations[one_of_locations] = location_num_in_list
+        location_num_in_list += 1
 
-    if len(raznie_locatsii) > 0:
-        print(f'Так же вы увидели разные локации {raznie_locatsii}')
-        new_loc = list(raznie_locatsii.items())[0]
-        print('Вы выбрали локицию:')
-        print(new_loc)
-        current_location = location_sostav[new_loc[1]]
-        loc_name = new_loc[0]
-        print('-' * 20)
-    else:
+    if len(next_step_locations) == 0:
         print('Вы в тупике')
-        print('-' * 20)
+        next_loc_exist = False
         game_over = True
+    else:
+        locations = list(next_step_locations.keys())
+        for location in locations:
+            print(f'-- Вход в локацию {location}')
+
+    print('Выберите действие:')
+    if monster_attack:
+        print('Атаковать монстра')
+    if next_loc_exist:
+        print('Перейти в другую локацию')
+
+    if next_loc_exist:
+        new_loc = list(next_step_locations.items())[0]
+        print('Вы выбрали локацию:')
+        print(new_loc)
+        current_location = location_content[new_loc[1]]
+        current_location_name = list(current_location.keys())[0]
+        print('-' * 20)
 
 # with open("rpg2.json", "w") as write_file:
 #     json.dump(rpg_data, write_file, indent=2)  # dump - запись в переменную
