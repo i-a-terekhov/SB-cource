@@ -88,17 +88,44 @@ while not game_over:
     if len(next_step_locations) == 0:
         print('Вы в тупике')
         next_loc_exist = False
-        game_over = True
+        game_over = True  # Временная заглушка - необходимо прописать условия выхода из игры (время)
     else:
         locations = list(next_step_locations.keys())
         for location in locations:
             print(f'-- Вход в локацию {location}')
 
-    print('Выберите действие:')
-    if monster_attack:
-        print('Атаковать монстра')
-    if next_loc_exist:
-        print('Перейти в другую локацию')
+    answer_is_correct = False
+    while not answer_is_correct:
+        print('Выберите действие:')
+        if monster_attack:
+            print('1. Атаковать монстра')
+        if next_loc_exist:
+            print('2. Перейти в другую локацию')
+        print('3. Выход')
+
+        user_step = input()
+        if user_step == '1':
+            if monster_attack:
+                print('Вы решили атаковать!')
+                answer_is_correct = True
+            else:
+                print('Здесь некого атаковать...')
+
+        elif user_step == '2':
+            if next_loc_exist:
+                print('Вы решили пойти дальше')
+                answer_is_correct = True
+            else:
+                print('Некуда идти дальше...')
+
+        elif user_step == '3':
+            print('Вы решили завершить игру')
+            game_over = True
+            break
+        else:
+            print('Некорректный ввод')
+
+
 
     if next_loc_exist:
         new_loc = list(next_step_locations.items())[0]
