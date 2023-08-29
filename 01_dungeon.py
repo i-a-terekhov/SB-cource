@@ -65,75 +65,83 @@ game_over = False
 while not game_over:
     print(f'Вы находитесь в {current_location_name}')
     location_content = current_location[current_location_name]
-    location_num_in_list = 0
-    next_step_locations = {}
-    next_loc_exist = True
-    monster_attack = False
-    print('Внутри вы видите:')
-    for entity in location_content:
-        if isinstance(entity, str):
-            print(f'-- Монстра: {entity}')
-            monster_attack = True
-        elif isinstance(entity, list):
-            print('-- Группу монстров: ', end='')
-            for _ in entity:
-                print(_, end=' ')
-            print()
-            monster_attack = True
-        else:
-            one_of_locations = list(entity.keys())[0]
-            next_step_locations[one_of_locations] = location_num_in_list
-        location_num_in_list += 1
 
-    if len(next_step_locations) == 0:
-        print('Вы в тупике')
-        next_loc_exist = False
-        game_over = True  # Временная заглушка - необходимо прописать условия выхода из игры (время)
+    tree_of_options = {'monsters': {}, 'loc_entrance': {}}
+    monster_exist = False
+    next_loc_exist = False
+    entity_num_in_list = -1
+    for entity in location_content:
+        entity_num_in_list += 1
+        if isinstance(entity, str):
+            tree_of_options['monsters'][entity] = entity_num_in_list
+        elif isinstance(entity, list):
+            for _ in entity:
+                tree_of_options['monsters'][_] = entity_num_in_list  # временное решение, что делать с листом монстров?
+                # использовать лист монстров как связанную группу? напали на одного - придется драться со всеми?
+        else:
+            loc_name = list(entity.keys())[0]
+            tree_of_options['loc_entrance'][loc_name] = entity_num_in_list
+
+    # pprint(tree_of_options)  # TODO для отладки
+
+    if len(tree_of_options['monsters']) != 0:
+        monster_exist = True
+    if len(tree_of_options['loc_entrance']) != 0:
+        next_loc_exist = True
+
+    print('Внутри вы видите:')
+    if monster_exist:
+        for monster in tree_of_options['monsters']:
+            print(f'-- Монстра: {monster}')
+    if next_loc_exist:
+        for entrance in tree_of_options['loc_entrance']:
+            print(f'-- Вход в локацию {entrance}')
     else:
-        locations = list(next_step_locations.keys())
-        for location in locations:
-            print(f'-- Вход в локацию {location}')
+        print('Вы в тупике')
+        game_over = True  # Временная заглушка - необходимо прописать условия выхода из игры (время)
 
     answer_is_correct = False
     while not answer_is_correct:
         print('Выберите действие:')
-        if monster_attack:
+        if monster_exist:
             print('1. Атаковать монстра')
         if next_loc_exist:
             print('2. Перейти в другую локацию')
         print('3. Выход')
 
-        user_step = input()
-        if user_step == '1':
-            if monster_attack:
+        user_action = input()
+        if user_action == '1':
+            if monster_exist:
                 print('Вы решили атаковать!')
+                # TODO какого монстра атакуем? После боя удаляем монстра из location_content и начинаем осмотр локации заново
                 answer_is_correct = True
             else:
                 print('Здесь некого атаковать...')
 
-        elif user_step == '2':
+        elif user_action == '2':
             if next_loc_exist:
                 print('Вы решили пойти дальше')
+                # TODO имея номер следующей локации - следуем туда
                 answer_is_correct = True
             else:
                 print('Некуда идти дальше...')
 
-        elif user_step == '3':
+        elif user_action == '3':
             print('Вы решили завершить игру')
             game_over = True
             break
         else:
             print('Некорректный ввод')
 
-
-
     if next_loc_exist:
-        new_loc = list(next_step_locations.items())[0]
-        print('Вы выбрали локацию:')
-        print(new_loc)
-        current_location = location_content[new_loc[1]]
+        user_choise = list(tree_of_options['loc_entrance'].keys())[0]  # заглушка - добавить ручной ввод выбора
+        print('Имя новой локации:', user_choise)
+        loc_num_in_list = tree_of_options['loc_entrance'][user_choise]
+        print('В листе имеет индекс:', end='')
+        print(loc_num_in_list)
+        current_location = location_content[loc_num_in_list]  # получение словаря-локации следующего хода
         current_location_name = list(current_location.keys())[0]
-        print('-' * 20)
+        print('-' * 60)
 
 # with open("rpg2.json", "w") as write_file:
 #     json.dump(rpg_data, write_file, indent=2)  # dump - запись в переменную
