@@ -44,12 +44,13 @@
 # 2.Перейти в другую локацию
 # 3.Выход
 
-remaining_time = '1234567890.0987654321'
+# remaining_time = '1234567890.0987654321'
 # если изначально не писать число в виде строки - теряется точность!
-field_names = ['current_location', 'current_experience', 'current_date']
+# field_names = ['current_location', 'current_experience', 'current_date']
 
 import json
 from pprint import pprint
+import time
 
 
 with open("rpg.json", "r") as rpg_file:
@@ -61,41 +62,36 @@ with open("rpg.json", "r") as rpg_file:
 
 current_location = rpg_data
 current_location_name = list(current_location.keys())[0]
+remaining_time = '1234567890.0987654321'
 current_experience = 0
 game_over = False
 while not game_over:
     print(f'Вы находитесь в {current_location_name}')
+    monster_exist = False
+    next_loc_exist = False
     location_content = current_location[current_location_name]
 
-    tree_of_options = {'monsters': {}, 'loc_entrance': {}}
+    tree_of_options = {'loc_entrance': {}}
+    print('Внутри вы видите:')
     entity_num_in_list = -1
     for entity in location_content:
         entity_num_in_list += 1
         if isinstance(entity, str):
-            tree_of_options['monsters'][entity] = entity_num_in_list
+            if isinstance(entity, str):
+                print(f'-- Монстра: {entity}')
+                monster_exist = True
         elif isinstance(entity, list):
-            for _ in entity:
-                tree_of_options['monsters'][_] = entity_num_in_list  # временное решение, что делать с листом монстров?
-                # использовать лист монстров как связанную группу? напали на одного - придется драться со всеми?
+            print(f'-- Группу монстров:', end=' ')
+            group = ', '.join(entity)
+            print(group)
+            monster_exist = True
         else:
             loc_name = list(entity.keys())[0]
             tree_of_options['loc_entrance'][loc_name] = entity_num_in_list
-
-    # pprint(tree_of_options)  # TODO для отладки
-
-    monster_exist = len(tree_of_options['loc_entrance']) != 0
-    next_loc_exist = len(tree_of_options['loc_entrance']) != 0
-
-    print('Внутри вы видите:')
-    if monster_exist:
-        for monster in tree_of_options['monsters']:
-            print(f'-- Монстра: {monster}')
+            next_loc_exist = True
     if next_loc_exist:
         for entrance in tree_of_options['loc_entrance']:
             print(f'-- Вход в локацию {entrance}')
-    else:
-        print('Вы в тупике')
-        game_over = True  # Временная заглушка - необходимо прописать условия выхода из игры (время)
 
     user_action = ''
     answer_is_correct = False
@@ -108,21 +104,11 @@ while not game_over:
         print('3. Выход')
 
         user_action = input()
-        if user_action == '1':
-            if monster_exist:
-                # TODO какого монстра атакуем? После боя удаляем монстра из location_content и начинаем осмотр локации заново
-                answer_is_correct = True
-            else:
-                print('Здесь некого атаковать...')
-
-        elif user_action == '2':
-            if next_loc_exist:
-                print('Вы решили пойти дальше')
-                # TODO имея номер следующей локации - следуем туда
-                answer_is_correct = True
-            else:
-                print('Некуда идти дальше...')
-
+        if user_action == '1' and monster_exist:
+            answer_is_correct = True
+        elif user_action == '2' and next_loc_exist:
+            print('Вы решили пойти дальше')
+            answer_is_correct = True
         elif user_action == '3':
             print('Вы решили завершить игру')
             game_over = True
@@ -130,32 +116,44 @@ while not game_over:
         else:
             print('Некорректный ввод')
 
-    # TODO бой с монстром вынести в основной цикл while, т.к. после боя нужно удалить монстра и начать цикл заново
-    # не изменяя current_location
-
     if user_action == '1':
         answer_is_correct = False
         while not answer_is_correct:
             print('Вы решили атаковать! Выберете цель!')
             num_of_monster = -1
-            for monster in tree_of_options['monsters']:
-                num_of_monster += 1
-                print(f'{num_of_monster + 1} - {monster}')
+            for monster in location_content:
+                if isinstance(monster, str):
+                    num_of_monster += 1
+                    print(f'{num_of_monster + 1} - {monster}')
+                if isinstance(monster, list):
+                    num_of_monster += 1
+                    print(f'{num_of_monster + 1} - группа:', end=' ')
+                    group = ', '.join(monster)
+                    print(group)
 
             user_attack_monster = input()
             try:
                 user_attack_monster = int(user_attack_monster)
-            except TypeError:
+            except ValueError:
                 print('Некорректный ввод')
+                time.sleep(1)
                 continue
 
             user_attack_monster -= 1
             if user_attack_monster not in [0, num_of_monster]:
-                print('Непонятно, куда бить')
+                print('Промах!')
             else:
-                print('Вы провели успешную атаку')
+                # TODO сделать обработку для группы монстров
+                monster_name = str(location_content[user_attack_monster])
+                remaining_time = float(remaining_time)
+                time_for_fight = float(monster_name.split('_', maxsplit=2)[2][2:])
+                remaining_time -= time_for_fight
+                print(f'Вы провели успешную атаку на {monster_name}, потратив {time_for_fight} секунд')
+                print(f'У вас осталось времени {remaining_time}')
+                location_content.pop(user_attack_monster)
                 answer_is_correct = True
-
+        time.sleep(1)
+        print('-' * 60)
         continue
 
 
