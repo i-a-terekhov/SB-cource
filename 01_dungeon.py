@@ -61,14 +61,13 @@ with open("rpg.json", "r") as rpg_file:
 
 current_location = rpg_data
 current_location_name = list(current_location.keys())[0]
+current_experience = 0
 game_over = False
 while not game_over:
     print(f'Вы находитесь в {current_location_name}')
     location_content = current_location[current_location_name]
 
     tree_of_options = {'monsters': {}, 'loc_entrance': {}}
-    monster_exist = False
-    next_loc_exist = False
     entity_num_in_list = -1
     for entity in location_content:
         entity_num_in_list += 1
@@ -84,10 +83,8 @@ while not game_over:
 
     # pprint(tree_of_options)  # TODO для отладки
 
-    if len(tree_of_options['monsters']) != 0:
-        monster_exist = True
-    if len(tree_of_options['loc_entrance']) != 0:
-        next_loc_exist = True
+    monster_exist = len(tree_of_options['loc_entrance']) != 0
+    next_loc_exist = len(tree_of_options['loc_entrance']) != 0
 
     print('Внутри вы видите:')
     if monster_exist:
@@ -100,6 +97,7 @@ while not game_over:
         print('Вы в тупике')
         game_over = True  # Временная заглушка - необходимо прописать условия выхода из игры (время)
 
+    user_action = ''
     answer_is_correct = False
     while not answer_is_correct:
         print('Выберите действие:')
@@ -112,7 +110,6 @@ while not game_over:
         user_action = input()
         if user_action == '1':
             if monster_exist:
-                print('Вы решили атаковать!')
                 # TODO какого монстра атакуем? После боя удаляем монстра из location_content и начинаем осмотр локации заново
                 answer_is_correct = True
             else:
@@ -132,6 +129,37 @@ while not game_over:
             break
         else:
             print('Некорректный ввод')
+
+    # TODO бой с монстром вынести в основной цикл while, т.к. после боя нужно удалить монстра и начать цикл заново
+    # не изменяя current_location
+
+    if user_action == '1':
+        answer_is_correct = False
+        while not answer_is_correct:
+            print('Вы решили атаковать! Выберете цель!')
+            num_of_monster = -1
+            for monster in tree_of_options['monsters']:
+                num_of_monster += 1
+                print(f'{num_of_monster + 1} - {monster}')
+
+            user_attack_monster = input()
+            try:
+                user_attack_monster = int(user_attack_monster)
+            except TypeError:
+                print('Некорректный ввод')
+                continue
+
+            user_attack_monster -= 1
+            if user_attack_monster not in [0, num_of_monster]:
+                print('Непонятно, куда бить')
+            else:
+                print('Вы провели успешную атаку')
+                answer_is_correct = True
+
+        continue
+
+
+
 
     if next_loc_exist:
         user_choise = list(tree_of_options['loc_entrance'].keys())[0]  # заглушка - добавить ручной ввод выбора
