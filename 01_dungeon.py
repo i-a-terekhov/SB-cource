@@ -81,26 +81,26 @@ def exp_calc(text_name: str):
 
 current_location = rpg_data
 current_location_name = list(current_location.keys())[0]
-monster_exist = False
-next_loc_exist = False
 remaining_time = '1234567890.0987654321'
 current_experience = 0
 game_over = False
 while not game_over:
     location_content = current_location[current_location_name]
     tree_of_options = []
+    monster_exist = False
+    next_loc_exist = False
     for num, entity in enumerate(location_content):
         if isinstance(entity, str):
             monster_exist = True
             name = entity
             cl = 'monster'
-            time = time_cost(entity)
+            action_time = time_cost(entity)
             exp = exp_calc(name)
         elif isinstance(entity, list):
             monster_exist = True
             name = ', '.join(entity)
             cl = 'monster'
-            time = 0
+            action_time = 0
             exp = 0
             for _ in entity:
                 time += time_cost(_)
@@ -109,9 +109,9 @@ while not game_over:
             next_loc_exist = True
             name = list(entity.keys())[0]
             cl = 'entrance'
-            time = time_cost(name)
+            action_time = time_cost(name)
             exp = exp_calc(name)
-        tree_of_options.append(({'name': name, 'class': cl, 'time': time, 'exp': exp, 'address': num}))
+        tree_of_options.append(({'name': name, 'class': cl, 'time': action_time, 'exp': exp, 'address': num}))
     print('Итог скана локации')
     pprint(tree_of_options)
 
