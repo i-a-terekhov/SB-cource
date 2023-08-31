@@ -74,6 +74,7 @@ while not game_over:
     tree_of_options = {'loc_entrance': {}}
     print('Внутри вы видите:')
     entity_num_in_list = -1
+    # TODO применить enumerate:
     for entity in location_content:
         # TODO вот здесь нужно запоминать время и експу для монстров, чтобы не шерстить вновь location_content
         entity_num_in_list += 1
@@ -107,7 +108,6 @@ while not game_over:
         if user_action == '1' and monster_exist:
             answer_is_correct = True
         elif user_action == '2' and next_loc_exist:
-            print('Вы решили пойти дальше')
             answer_is_correct = True
         elif user_action == '3':
             print('Вы решили завершить игру')
@@ -122,6 +122,7 @@ while not game_over:
             print('Вы решили атаковать! Выберете цель!')
             num_of_monster = -1
             for monster in location_content:
+                # TODO Баг: num_of_monster будет работать некорректно, если где-то перед монстрами будет локация
                 if isinstance(monster, str):
                     num_of_monster += 1
                     print(f'{num_of_monster + 1} - {monster}')
@@ -165,8 +166,40 @@ while not game_over:
         print('-' * 60)
         continue
 
+    elif user_action == '2':
+        answer_is_correct = False
+        while not answer_is_correct:
+            print('Вы решили пойти дальше! Выберете локацию!')
+            num_of_loc = -1
+            for location in location_content:
+                # TODO Баг: по аналогии с num_of_monster, num_of_loc некорректно работает, если перед локой есть монстр
+                num_of_loc += 1
+                print('Проверяем объект на dict')
+                if isinstance(location, dict):
+                    print('Это dict!', num_of_loc)
+                    print(f'{num_of_loc + 1} - {list(location.keys())[0]}')
+
+            user_try_go = input()
+            try:
+                user_try_go = int(user_try_go)
+            except ValueError:
+                print('Некорректный ввод')
+                time.sleep(1)
+                continue
+            print(f'Диапазон проверки на стену [0, {num_of_loc}]')
+            user_try_go -= 1
+            if user_try_go not in [0, num_of_loc]:
+                print('Это стена!')
+            else:
+                next_loc = location_content[user_try_go]
+                print('Некс лок', next_loc)
+                next_loc_name = list(next_loc.keys())[0]
+                # TODO здесь "индексы" user_try_go не совпадают с исходным листом
+                answer_is_correct = True
+
     if next_loc_exist:
-        user_choise = list(tree_of_options['loc_entrance'].keys())[0]  # заглушка - добавить ручной ввод выбора
+        # user_choise = list(tree_of_options['loc_entrance'].keys())[0]  # заглушка - добавить ручной ввод выбора
+        user_choise = next_loc_name
         print('Имя новой локации:', user_choise)
         loc_num_in_list = tree_of_options['loc_entrance'][user_choise]
         print('В листе имеет индекс:', end='')
