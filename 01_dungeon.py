@@ -51,7 +51,7 @@
 import json
 from pprint import pprint
 import time
-
+import re
 
 with open("rpg.json", "r") as rpg_file:
     rpg_data = json.load(rpg_file)
@@ -60,39 +60,60 @@ with open("rpg.json", "r") as rpg_file:
 # rpg_dumps = json.dumps(rpg_data)  # dumps - запись в переменную в виде строки <- памятка
 # print(type(rpg_dumps))
 
+
+def time_cost(text_name: str):
+    pattern = r'tm(\d+)'
+    match = re.search(pattern, text_name)
+    if match:
+        return match.group(1)
+    else:
+        return None
+
+
+def exp_calc(text_name: str):
+    pattern = r'exp(\d+)'
+    match = re.search(pattern, text_name)
+    if match:
+        return match.group(1)
+    else:
+        return None
+
+
 current_location = rpg_data
 current_location_name = list(current_location.keys())[0]
+monster_exist = False
+next_loc_exist = False
 remaining_time = '1234567890.0987654321'
 current_experience = 0
 game_over = False
 while not game_over:
-    print(f'Вы находитесь в {current_location_name}')
-    monster_exist = False
-    next_loc_exist = False
     location_content = current_location[current_location_name]
-
-    tree_of_options = {'loc_entrance': {}}
-    print('Внутри вы видите:')
-    entity_num_in_list = -1
-    # TODO применить enumerate:
-    for entity in location_content:
-        # TODO вот здесь нужно запоминать время и експу для монстров, чтобы не шерстить вновь location_content
-        entity_num_in_list += 1
+    tree_of_options = []
+    for num, entity in enumerate(location_content):
         if isinstance(entity, str):
-            print(f'-- Монстра: {entity}')
             monster_exist = True
+            name = entity
+            cl = 'monster'
+            time = time_cost(entity)
+            exp = exp_calc(name)
         elif isinstance(entity, list):
-            print(f'-- Группу монстров:', end=' ')
-            group = ', '.join(entity)
-            print(group)
             monster_exist = True
+            name = ', '.join(entity)
+            cl = 'monster'
+            time = 0
+            exp = 0
+            for _ in entity:
+                time += time_cost(_)
+                exp += exp_calc(_)
         else:
-            loc_name = list(entity.keys())[0]
-            tree_of_options['loc_entrance'][loc_name] = entity_num_in_list
             next_loc_exist = True
-    if next_loc_exist:
-        for entrance in tree_of_options['loc_entrance']:
-            print(f'-- Вход в локацию {entrance}')
+            name = list(entity.keys())[0]
+            cl = 'entrance'
+            time = time_cost(name)
+            exp = exp_calc(name)
+        tree_of_options.append(({'name': name, 'class': cl, 'time': time, 'exp': exp, 'address': num}))
+    print('Итог скана локации')
+    pprint(tree_of_options)
 
     user_action = ''
     answer_is_correct = False
@@ -174,9 +195,7 @@ while not game_over:
             for location in location_content:
                 # TODO Баг: по аналогии с num_of_monster, num_of_loc некорректно работает, если перед локой есть монстр
                 num_of_loc += 1
-                print('Проверяем объект на dict')
                 if isinstance(location, dict):
-                    print('Это dict!', num_of_loc)
                     print(f'{num_of_loc + 1} - {list(location.keys())[0]}')
 
             user_try_go = input()
@@ -201,7 +220,7 @@ while not game_over:
         # user_choise = list(tree_of_options['loc_entrance'].keys())[0]  # заглушка - добавить ручной ввод выбора
         user_choise = next_loc_name
         print('Имя новой локации:', user_choise)
-        loc_num_in_list = tree_of_options['loc_entrance'][user_choise]
+        loc_num_in_list = tree_of_options[user_choise]
         print('В листе имеет индекс:', end='')
         print(loc_num_in_list)
         current_location = location_content[loc_num_in_list]  # получение словаря-локации следующего хода
