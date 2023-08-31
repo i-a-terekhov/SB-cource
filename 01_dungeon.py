@@ -65,7 +65,7 @@ def time_cost(text_name: str):
     pattern = r'tm(\d+)'
     match = re.search(pattern, text_name)
     if match:
-        return match.group(1)
+        return int(match.group(1))
     else:
         return None
 
@@ -74,7 +74,7 @@ def exp_calc(text_name: str):
     pattern = r'exp(\d+)'
     match = re.search(pattern, text_name)
     if match:
-        return match.group(1)
+        return int(match.group(1))
     else:
         return None
 
@@ -141,53 +141,35 @@ while not game_over:
         answer_is_correct = False
         while not answer_is_correct:
             print('Вы решили атаковать! Выберете цель!')
-            num_of_monster = -1
-            for monster in location_content:
-                # TODO Баг: num_of_monster будет работать некорректно, если где-то перед монстрами будет локация
-                if isinstance(monster, str):
+            num_of_monster = 0
+            current_loc_address = {}
+            for entity in tree_of_options:
+                if entity.get('class') == 'monster':
                     num_of_monster += 1
-                    print(f'{num_of_monster + 1} - {monster}')
-                if isinstance(monster, list):
-                    num_of_monster += 1
-                    print(f'{num_of_monster + 1} - группа:', end=' ')
-                    group = ', '.join(monster)
-                    print(group)
-
+                    current_loc_address[str(num_of_monster)] = entity.get('address')
+                    nm = entity['name']
+                    print(f'{num_of_monster} - {nm}')
             user_try_attack = input()
-            try:
-                user_try_attack = int(user_try_attack)
-            except ValueError:
+            if user_try_attack not in list(current_loc_address.keys()):
                 print('Некорректный ввод')
-                time.sleep(1)
-                continue
-
-            user_try_attack -= 1
-            if user_try_attack not in [0, num_of_monster]:
-                print('Промах!')
             else:
-                monster_under_attack = location_content[user_try_attack]
-                remaining_time = float(remaining_time)
-                time_for_fight = 0.0
-                experience = 0
-                if isinstance(monster_under_attack, str):
-                    time_for_fight = float(monster_under_attack.split('_', maxsplit=2)[2][2:])
-                    experience = float(monster_under_attack.split('_', maxsplit=2)[1][3:])
-                elif isinstance(monster_under_attack, list):
-                    for mob in monster_under_attack:
-                        time_for_fight += float(mob.split('_', maxsplit=2)[2][2:])
-                        experience += float(mob.split('_', maxsplit=2)[1][3:])
-                print(f'Вы провели успешную атаку! Потрачено {time_for_fight} секунд, получено {experience} опыта')
-                current_experience += experience
-                remaining_time -= time_for_fight
-                print(f'У вас осталось времени {remaining_time}, всего опыта {current_experience}')
-                location_content.pop(user_try_attack)
-                answer_is_correct = True
+                monster_under_attack = tree_of_options[current_loc_address[user_try_attack]]
+                time_for_fight = monster_under_attack['time']
+                experience_for_fight = monster_under_attack['exp']
+                print(f'Вы провели успешную атаку! Потрачено {time_for_fight} секунд, получено {experience_for_fight} опыта')
 
+                remaining_time = float(remaining_time)
+                remaining_time -= time_for_fight
+                current_experience += experience_for_fight
+                print(f'У вас осталось времени {remaining_time}, всего опыта {current_experience}')
+                location_content.pop(current_loc_address[user_try_attack])
+                answer_is_correct = True
         time.sleep(1)
         print('-' * 60)
         continue
 
     elif user_action == '2':
+        # TODO изменить данный блок по примеру  блока if user_action == '1':
         answer_is_correct = False
         while not answer_is_correct:
             print('Вы решили пойти дальше! Выберете локацию!')
