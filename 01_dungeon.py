@@ -75,11 +75,11 @@ while not game_over:
     print('Внутри вы видите:')
     entity_num_in_list = -1
     for entity in location_content:
+        # TODO вот здесь нужно запоминать время и експу для монстров, чтобы не шерстить вновь location_content
         entity_num_in_list += 1
         if isinstance(entity, str):
-            if isinstance(entity, str):
-                print(f'-- Монстра: {entity}')
-                monster_exist = True
+            print(f'-- Монстра: {entity}')
+            monster_exist = True
         elif isinstance(entity, list):
             print(f'-- Группу монстров:', end=' ')
             group = ', '.join(entity)
@@ -131,33 +131,39 @@ while not game_over:
                     group = ', '.join(monster)
                     print(group)
 
-            user_attack_monster = input()
+            user_try_attack = input()
             try:
-                user_attack_monster = int(user_attack_monster)
+                user_try_attack = int(user_try_attack)
             except ValueError:
                 print('Некорректный ввод')
                 time.sleep(1)
                 continue
 
-            user_attack_monster -= 1
-            if user_attack_monster not in [0, num_of_monster]:
+            user_try_attack -= 1
+            if user_try_attack not in [0, num_of_monster]:
                 print('Промах!')
             else:
-                # TODO сделать обработку для группы монстров
-                monster_name = str(location_content[user_attack_monster])
+                monster_under_attack = location_content[user_try_attack]
                 remaining_time = float(remaining_time)
-                time_for_fight = float(monster_name.split('_', maxsplit=2)[2][2:])
+                time_for_fight = 0.0
+                experience = 0
+                if isinstance(monster_under_attack, str):
+                    time_for_fight = float(monster_under_attack.split('_', maxsplit=2)[2][2:])
+                    experience = float(monster_under_attack.split('_', maxsplit=2)[1][3:])
+                elif isinstance(monster_under_attack, list):
+                    for mob in monster_under_attack:
+                        time_for_fight += float(mob.split('_', maxsplit=2)[2][2:])
+                        experience += float(mob.split('_', maxsplit=2)[1][3:])
+                print(f'Вы провели успешную атаку! Потрачено {time_for_fight} секунд, получено {experience} опыта')
+                current_experience += experience
                 remaining_time -= time_for_fight
-                print(f'Вы провели успешную атаку на {monster_name}, потратив {time_for_fight} секунд')
-                print(f'У вас осталось времени {remaining_time}')
-                location_content.pop(user_attack_monster)
+                print(f'У вас осталось времени {remaining_time}, всего опыта {current_experience}')
+                location_content.pop(user_try_attack)
                 answer_is_correct = True
+
         time.sleep(1)
         print('-' * 60)
         continue
-
-
-
 
     if next_loc_exist:
         user_choise = list(tree_of_options['loc_entrance'].keys())[0]  # заглушка - добавить ручной ввод выбора
