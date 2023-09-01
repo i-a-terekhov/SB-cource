@@ -22,7 +22,7 @@
 # необходимо списать со счета 20 секунд и добавить 10 очков опыта.
 # Теги указывающие на опыт и время - 'exp' и 'tm'.
 # После того, как игра будет готова, сыграйте в неё и наберите 280 очков при положительном остатке времени.
-
+#TODO
 # По мере продвижения вам так же необходимо вести журнал,
 # в котором должна содержаться следующая информация:
 # -- текущее положение
@@ -61,6 +61,18 @@ with open("rpg.json", "r") as rpg_file:
 # print(type(rpg_dumps))
 
 
+def print_locations_content(location_name: str, entities: list):
+    print(f'Вы находитесь в {location_name} \nВнутри вы видите:')
+    if monster_exist:
+        for entity in entities:
+            if entity.get('class') == 'monster':
+                print(entity.get('representation'))
+    if next_loc_exist:
+        for entity in entities:
+            if entity.get('class') == 'entrance':
+                print(entity.get('representation'))
+
+
 def time_cost(text_name: str):
     pattern = r'tm(\d+)'
     match = re.search(pattern, text_name)
@@ -87,36 +99,38 @@ game_over = False
 game_win = False
 while not game_over:
     location_content = current_location[current_location_name]
-    tree_of_options = []
+    list_of_entity = []
     monster_exist = False
     next_loc_exist = False
     for num, entity in enumerate(location_content):
         if isinstance(entity, str):
             monster_exist = True
             name = entity
+            rep = '-- Монстра '
             cl = 'monster'
             action_time = time_cost(entity)
             exp = exp_calc(name)
         elif isinstance(entity, list):
             monster_exist = True
             name = ', '.join(entity)
+            rep = '-- Группу монстров: '
             cl = 'monster'
             action_time = 0
             exp = 0
             for _ in entity:
-                time += time_cost(_)
+                action_time += time_cost(_)
                 exp += exp_calc(_)
         else:
             next_loc_exist = True
             name = list(entity.keys())[0]
+            rep = '-- Вход в локацию: '
             cl = 'entrance'
             action_time = time_cost(name)
             exp = exp_calc(name)
-        tree_of_options.append(({'name': name, 'class': cl, 'time': action_time, 'exp': exp, 'address': num}))
-    print('Итог скана локации')
-    pprint(tree_of_options)
+        list_of_entity.append(({'name': name, 'representation': rep + name, 'class': cl, 'time': action_time, 'exp': exp, 'address': num}))
 
-    # TODO добавить вывод на экран содержания текущей локации согласно задания
+    print_locations_content(current_location_name, list_of_entity)
+    # TODO прикрутить журнал логирования
 
     user_action = ''
     answer_is_correct = False
@@ -148,7 +162,7 @@ while not game_over:
             print('Вы решили атаковать! Выберете цель!')
             num_of_entity = 0
             current_loc_address = {}
-            for entity in tree_of_options:
+            for entity in list_of_entity:
                 if entity.get('class') == 'monster':
                     num_of_entity += 1
                     current_loc_address[str(num_of_entity)] = entity.get('address')
@@ -158,7 +172,7 @@ while not game_over:
             if user_try_move not in list(current_loc_address.keys()):
                 print('Некорректный ввод')
             else:
-                direction_dict = tree_of_options[current_loc_address[user_try_move]]
+                direction_dict = list_of_entity[current_loc_address[user_try_move]]
                 time_per_move = direction_dict['time']
                 experience_for_fight = direction_dict['exp']
                 print(
@@ -173,7 +187,7 @@ while not game_over:
                 location_content.pop(current_loc_address[user_try_move])
                 answer_is_correct = True
         time.sleep(1)
-        print('-' * 60)
+        print('=' * 100)
 
     elif user_action == '2':
         answer_is_correct = False
@@ -181,7 +195,7 @@ while not game_over:
             print('Вы решили пойти дальше! Выберете локацию!')
             num_of_entity = 0
             current_loc_address = {}
-            for entity in tree_of_options:
+            for entity in list_of_entity:
                 if entity.get('class') == 'entrance':
                     num_of_entity += 1
                     current_loc_address[str(num_of_entity)] = entity.get('address')
@@ -191,7 +205,7 @@ while not game_over:
             if user_try_move not in list(current_loc_address.keys()):
                 print('Некорректный ввод')
             else:
-                direction_dict = tree_of_options[current_loc_address[user_try_move]]
+                direction_dict = list_of_entity[current_loc_address[user_try_move]]
                 time_per_move = direction_dict['time']
                 experience_for_fight = direction_dict['exp']
                 print(
@@ -210,12 +224,12 @@ while not game_over:
                 loc_num_in_list = direction_dict['address']
                 current_location = location_content[loc_num_in_list]  # получение словаря-локации следующего хода
                 current_location_name = list(current_location.keys())[0]
-                print('-' * 60)
+                print('=' * 100)
 
     if current_experience >= 280:
         game_over = True
 
-if current_experience >= 280:
+if current_experience >= 280 and float(remaining_time) > 0.0:
     print('Вы - победили')
 else:
     print('Вы проиграли')
