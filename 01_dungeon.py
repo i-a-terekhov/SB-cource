@@ -61,18 +61,6 @@ with open("rpg.json", "r") as rpg_file:
 # print(type(rpg_dumps))
 
 
-def print_locations_content(location_name: str, entities: list):
-    print(f'Вы находитесь в {location_name} \nВнутри вы видите:')
-    if monster_exist:
-        for entity in entities:
-            if entity.get('class') == 'monster':
-                print(entity.get('representation'))
-    if next_loc_exist:
-        for entity in entities:
-            if entity.get('class') == 'entrance':
-                print(entity.get('representation'))
-
-
 def time_cost(text_name: str):
     pattern = r'tm(\d+)'
     match = re.search(pattern, text_name)
@@ -89,6 +77,43 @@ def exp_calc(text_name: str):
         return int(match.group(1))
     else:
         return 0
+
+
+def print_locations_content(location_name: str, entities: list):
+    global monster_exist, next_loc_exist
+    print(f'Вы находитесь в {location_name} \nВнутри вы видите:')
+    if monster_exist:
+        for ent in entities:
+            if ent.get('class') == 'monster':
+                print(ent.get('representation'))
+    if next_loc_exist:
+        for ent in entities:
+            if ent.get('class') == 'entrance':
+                print(ent.get('representation'))
+
+
+def get_correct_input():
+    global monster_exist, next_loc_exist, game_over
+    while True:
+        print('Выберите действие:')
+        if monster_exist:
+            print('1. Атаковать монстра')
+        if next_loc_exist:
+            print('2. Перейти в другую локацию')
+        print('3. Выход')
+
+        user_input = input()
+        if user_input == '1' and monster_exist:
+            break
+        elif user_input == '2' and next_loc_exist:
+            break
+        elif user_input == '3':
+            print('Вы решили завершить игру')
+            game_over = True
+            break
+        else:
+            print('Некорректный ввод')
+    return user_input
 
 
 def user_action_handler(entityes, class_of_entity):
@@ -173,27 +198,7 @@ while not game_over:
     print_locations_content(current_location_name, list_of_entity)
     # TODO прикрутить журнал логирования
 
-    user_action = ''
-    answer_is_correct = False
-    while not answer_is_correct:
-        print('Выберите действие:')
-        if monster_exist:
-            print('1. Атаковать монстра')
-        if next_loc_exist:
-            print('2. Перейти в другую локацию')
-        print('3. Выход')
-
-        user_action = input()
-        if user_action == '1' and monster_exist:
-            answer_is_correct = True
-        elif user_action == '2' and next_loc_exist:
-            answer_is_correct = True
-        elif user_action == '3':
-            print('Вы решили завершить игру')
-            game_over = True
-            break
-        else:
-            print('Некорректный ввод')
+    user_action = get_correct_input()
 
     if user_action == '1':
         direction_dict = user_action_handler(list_of_entity, 'monster')
