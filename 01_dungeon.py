@@ -213,13 +213,13 @@ while not game_over:
         current_location_name = list(current_location.keys())[0]
         print('=' * 100)
 
-    if current_experience >= 280 or float(remaining_time) < 0.0:
+    if current_experience >= 280 and float(remaining_time) >= 0.0:
+        print('Вы - победили')
+        game_over = True
+    elif float(remaining_time) < 0.0:
+        print('Вы проиграли')
         game_over = True
 
-if current_experience >= 280 and float(remaining_time) > 0.0:
-    print('Вы - победили')
-else:
-    print('Вы проиграли')
 
 # with open("rpg2.json", "w") as write_file:
 #     json.dump(rpg_data, write_file, indent=2)  # dump - запись в переменную
