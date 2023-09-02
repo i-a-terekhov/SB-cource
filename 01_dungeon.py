@@ -91,12 +91,53 @@ def exp_calc(text_name: str):
         return 0
 
 
+def user_action_handler(entityes, class_of_entity):
+
+    while True:
+        if class_of_entity == 'monster':
+            print('Вы решили атаковать! Выберете цель!')
+        elif class_of_entity == 'entrance':
+            print('Вы пойти дальше Выберете локацию!')
+        num_of_entity = 0
+        current_loc_address = {}
+
+        for entity in entityes:
+            if entity.get('class') == class_of_entity:
+                num_of_entity += 1
+                current_loc_address[str(num_of_entity)] = entity.get('address')
+                nm = entity['name']
+                print(f'{num_of_entity} - {nm}')
+        user_try_move = input()
+        if user_try_move not in list(current_loc_address.keys()):
+            print('Некорректный ввод')
+        else:
+            return entityes[current_loc_address[user_try_move]]
+
+
+def print_result_of_step(direction, class_of_entity):
+    global remaining_time, current_experience
+
+    time_per_move = direction['time']
+    experience_for_fight = direction['exp']
+    nm = direction['name']
+    if class_of_entity == 'entrance':
+        print(f'Вы выбрали новую локацию {nm}!')
+    elif class_of_entity == 'monster':
+        print(f'Вы провели успешную атаку! Потрачено {time_per_move} секунд, получено {experience_for_fight} опыта')
+    remaining_time = float(remaining_time)
+    remaining_time -= time_per_move
+    current_experience += experience_for_fight
+    print(f'У вас осталось времени {remaining_time}, всего опыта {current_experience}')
+
+
 current_location = rpg_data
 current_location_name = list(current_location.keys())[0]
 remaining_time = '1234567890.0987654321'
 current_experience = 0
 game_over = False
 game_win = False
+
+
 while not game_over:
     location_content = current_location[current_location_name]
     list_of_entity = []
@@ -154,79 +195,20 @@ while not game_over:
         else:
             print('Некорректный ввод')
 
-    # TODO выделить обработку действий при выборе "1" и "2" в отдельную функцию
-
     if user_action == '1':
-        answer_is_correct = False
-        while not answer_is_correct:
-            print('Вы решили атаковать! Выберете цель!')
-            num_of_entity = 0
-            current_loc_address = {}
-            for entity in list_of_entity:
-                if entity.get('class') == 'monster':
-                    num_of_entity += 1
-                    current_loc_address[str(num_of_entity)] = entity.get('address')
-                    nm = entity['name']
-                    print(f'{num_of_entity} - {nm}')
-            user_try_move = input()
-            if user_try_move not in list(current_loc_address.keys()):
-                print('Некорректный ввод')
-            else:
-                direction_dict = list_of_entity[current_loc_address[user_try_move]]
-                time_per_move = direction_dict['time']
-                experience_for_fight = direction_dict['exp']
-                print(
-                    f'Вы провели успешную атаку! Потрачено {time_per_move} секунд,'
-                    f'получено {experience_for_fight} опыта')
-
-                remaining_time = float(remaining_time)
-                remaining_time -= time_per_move
-                current_experience += experience_for_fight
-                print(f'У вас осталось времени {remaining_time}, всего опыта {current_experience}')
-
-                location_content.pop(current_loc_address[user_try_move])
-                answer_is_correct = True
-        time.sleep(1)
+        direction_dict = user_action_handler(list_of_entity, 'monster')
+        print_result_of_step(direction_dict, 'monster')
+        location_content.pop(direction_dict['address'])
         print('=' * 100)
 
     elif user_action == '2':
-        answer_is_correct = False
-        while not answer_is_correct:
-            print('Вы решили пойти дальше! Выберете локацию!')
-            num_of_entity = 0
-            current_loc_address = {}
-            for entity in list_of_entity:
-                if entity.get('class') == 'entrance':
-                    num_of_entity += 1
-                    current_loc_address[str(num_of_entity)] = entity.get('address')
-                    nm = entity['name']
-                    print(f'{num_of_entity} - {nm}')
-            user_try_move = input()
-            if user_try_move not in list(current_loc_address.keys()):
-                print('Некорректный ввод')
-            else:
-                direction_dict = list_of_entity[current_loc_address[user_try_move]]
-                time_per_move = direction_dict['time']
-                experience_for_fight = direction_dict['exp']
-                print(
-                    f'Вы перешли в новую локацию! Потрачено {time_per_move} секунд,'
-                    f'получено {experience_for_fight} опыта')
+        direction_dict = user_action_handler(list_of_entity, 'entrance')
+        print_result_of_step(direction_dict, 'entrance')
+        current_location = location_content[direction_dict['address']]
+        current_location_name = list(current_location.keys())[0]
+        print('=' * 100)
 
-                remaining_time = float(remaining_time)
-                remaining_time -= time_per_move
-                current_experience += experience_for_fight
-                print(f'У вас осталось времени {remaining_time}, всего опыта {current_experience}')
-
-                # location_content.pop(current_loc_address[user_try_go])  # строка оставлена для сходства с блоком выше
-                answer_is_correct = True
-
-                print('Имя новой локации:', direction_dict['name'])
-                loc_num_in_list = direction_dict['address']
-                current_location = location_content[loc_num_in_list]  # получение словаря-локации следующего хода
-                current_location_name = list(current_location.keys())[0]
-                print('=' * 100)
-
-    if current_experience >= 280:
+    if current_experience >= 280 or float(remaining_time) < 0.0:
         game_over = True
 
 if current_experience >= 280 and float(remaining_time) > 0.0:
