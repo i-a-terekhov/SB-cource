@@ -22,7 +22,7 @@
 # необходимо списать со счета 20 секунд и добавить 10 очков опыта.
 # Теги указывающие на опыт и время - 'exp' и 'tm'.
 # После того, как игра будет готова, сыграйте в неё и наберите 280 очков при положительном остатке времени.
-#TODO
+
 # По мере продвижения вам так же необходимо вести журнал,
 # в котором должна содержаться следующая информация:
 # -- текущее положение
@@ -49,7 +49,6 @@
 # field_names = ['current_location', 'current_experience', 'current_date']
 
 import json
-from pprint import pprint
 from datetime import datetime
 import re
 import csv
@@ -81,49 +80,67 @@ def exp_calc(text_name: str):
 
 
 def print_locations_content(location_name: str, entities: list):
-    global monster_exist, next_loc_exist
-    print(f'Вы находитесь в {location_name} \nВнутри вы видите:')
+    global monster_exist, next_loc_exist, data_of_round
+    output_string = f'Вы находитесь в {location_name}. Внутри вы видите:'
+    print(output_string)
+    data_of_round.append(output_string)
     if monster_exist:
         for ent in entities:
             if ent.get('class') == 'monster':
-                print(ent.get('representation'))
+                output_string = ent.get('representation')
+                print(output_string)
+                data_of_round.append(output_string)
     if next_loc_exist:
         for ent in entities:
             if ent.get('class') == 'entrance':
-                print(ent.get('representation'))
+                output_string = ent.get('representation')
+                print(output_string)
+                data_of_round.append(output_string)
 
 
 def get_correct_input():
-    global monster_exist, next_loc_exist, game_over
+    global monster_exist, next_loc_exist, game_over, data_of_round
     while True:
         print('Выберите действие:')
+        data_of_round.append('Выберите действие:')
         if monster_exist:
             print('1. Атаковать монстра')
+            data_of_round.append('1. Атаковать монстра')
         if next_loc_exist:
             print('2. Перейти в другую локацию')
+            data_of_round.append('2. Перейти в другую локацию')
         print('3. Выход')
+        data_of_round.append('3. Выход')
 
         user_input = input()
+        data_of_round.append(user_input)
         if user_input == '1' and monster_exist:
             break
         elif user_input == '2' and next_loc_exist:
             break
         elif user_input == '3':
             print('Вы решили завершить игру')
+            data_of_round.append('Вы решили завершить игру')
             game_over = True
             break
         else:
             print('Некорректный ввод')
+            data_of_round.append('Некорректный ввод')
     return user_input
 
 
 def user_action_handler(entityes, class_of_entity):
-
+    global data_of_round
     while True:
+        output_string = ''
         if class_of_entity == 'monster':
-            print('Вы решили атаковать! Выберете цель!')
+            output_string = 'Вы решили атаковать! Выберете цель!'
         elif class_of_entity == 'entrance':
-            print('Вы пойти дальше Выберете локацию!')
+            output_string = 'Вы решили пойти дальше! Выберете локацию!'
+
+        print(output_string)
+        data_of_round.append(output_string)
+
         num_of_entity = 0
         current_loc_address = {}
 
@@ -132,28 +149,39 @@ def user_action_handler(entityes, class_of_entity):
                 num_of_entity += 1
                 current_loc_address[str(num_of_entity)] = entity.get('address')
                 nm = entity['name']
-                print(f'{num_of_entity} - {nm}')
+                output_string = f'{num_of_entity} - {nm}'
+                print(output_string)
+                data_of_round.append(output_string)
         user_try_move = input()
+        data_of_round.append(user_try_move)
         if user_try_move not in list(current_loc_address.keys()):
             print('Некорректный ввод')
+            data_of_round.append('Некорректный ввод')
         else:
             return entityes[current_loc_address[user_try_move]]
 
 
 def print_result_of_step(direction, class_of_entity):
-    global remaining_time, current_experience
+    global remaining_time, current_experience, data_of_round
 
     time_per_move = direction['time']
     experience_for_fight = direction['exp']
     nm = direction['name']
+    output_string = ''
     if class_of_entity == 'entrance':
-        print(f'Вы выбрали новую локацию {nm}!')
+        output_string = f'Вы выбрали новую локацию {nm}!'
     elif class_of_entity == 'monster':
-        print(f'Вы провели успешную атаку! Потрачено {time_per_move} секунд, получено {experience_for_fight} опыта')
+        output_string = f'Вы провели успешную атаку! Потрачено {time_per_move} секунд, получено {experience_for_fight} опыта'
+    print(output_string)
+    data_of_round.append(output_string)
+
     remaining_time = float(remaining_time)
     remaining_time -= time_per_move
     current_experience += experience_for_fight
-    print(f'У вас осталось времени {remaining_time}, всего опыта {current_experience}')
+
+    output_string = f'У вас осталось времени {remaining_time}, всего опыта {current_experience}'
+    print(output_string)
+    data_of_round.append(output_string)
 
 
 current_location = rpg_data
@@ -162,7 +190,10 @@ remaining_time = '1234567890.0987654321'
 current_experience = 0
 game_over = False
 game_win = False
-
+time_of_start = datetime.now()
+formatted_time = time_of_start.strftime("%Y-%m-%d %H:%M:%S")
+print(f'Игра начата в {formatted_time}')
+data_of_game = []
 
 while not game_over:
     location_content = current_location[current_location_name]
@@ -196,41 +227,17 @@ while not game_over:
             exp = exp_calc(name)
         list_of_entity.append(({'name': name, 'representation': rep + name, 'class': cl, 'time': action_time, 'exp': exp, 'address': num}))
 
+    data_of_round = []
+    time_of_current_moment = datetime.now() - time_of_start
+    time_of_current_moment = time_of_current_moment.seconds
+    data_of_round.extend([
+        f'Вы находитесь в локации {current_location_name}',
+        f'У вас {current_experience} опыта и осталось {remaining_time} секунд',
+        f'Прошло уже {time_of_current_moment} секунд',
+        f'Внутри вы видите:',
+    ])
+
     print_locations_content(current_location_name, list_of_entity)
-    # TODO прикрутить журнал логирования
-    timestart = datetime.now()
-    huge_number = 2 ** 100000000
-    elapsed = datetime.now() - timestart
-    elapsed = elapsed.seconds
-    print(f'потрачено {elapsed} секунд')
-
-    formatted_time = timestart.strftime("%Y-%m-%d %H:%M:%S")
-    with open("dungeon.csv", "a", newline='') as log_file:
-        csv_writer = csv.writer(log_file)
-        data_of_round = [
-            f'{formatted_time}',
-            f'Вы находитесь в локации {current_location_name}',
-            f'У вас {current_experience} опыта и осталось {remaining_time} секунд',
-            f'Прошло уже {elapsed} секунд',
-
-        ]
-        csv_writer.writerow(data_of_round)
-
-
-    # Пример лога игры:
-    # Вы находитесь в Location_0_tm0
-    # У вас 0 опыта и осталось 1234567890.0987654321 секунд
-    # Прошло уже 0:00:00 # TODO стартовая временная метка, метка после отрисовки содержания локации, метка после обработки сущности
-    # Внутри вы видите:
-    # -- Монстра Mob_exp10_tm0
-    # -- Вход в локацию: Location_1_tm10400000
-    # -- Вход в локацию: Location_2_tm333000000
-    # Выберите действие:
-    # 1.Атаковать монстра
-    # 2.Перейти в другую локацию
-    # 3.Выход
-
-
 
     user_action = get_correct_input()
 
@@ -249,11 +256,18 @@ while not game_over:
 
     if current_experience >= 280 and float(remaining_time) >= 0.0:
         print('Вы - победили')
+        data_of_round.append('Вы - победили')
         game_over = True
     elif float(remaining_time) < 0.0:
         print('Вы проиграли')
+        data_of_round.append('Вы проиграли')
         game_over = True
 
+    data_of_game.append(data_of_round)
+
+with open("dungeon.csv", "a", newline='') as log_file:
+    csv_writer = csv.writer(log_file)
+    csv_writer.writerows(data_of_game)
 
 # with open("rpg2.json", "w") as write_file:
 #     json.dump(rpg_data, write_file, indent=2)  # dump - запись в переменную
