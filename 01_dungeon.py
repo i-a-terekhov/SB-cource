@@ -50,8 +50,9 @@
 
 import json
 from pprint import pprint
-import time
+from datetime import datetime
 import re
+import csv
 
 with open("rpg.json", "r") as rpg_file:
     rpg_data = json.load(rpg_file)
@@ -197,6 +198,39 @@ while not game_over:
 
     print_locations_content(current_location_name, list_of_entity)
     # TODO прикрутить журнал логирования
+    timestart = datetime.now()
+    huge_number = 2 ** 100000000
+    elapsed = datetime.now() - timestart
+    elapsed = elapsed.seconds
+    print(f'потрачено {elapsed} секунд')
+
+    formatted_time = timestart.strftime("%Y-%m-%d %H:%M:%S")
+    with open("dungeon.csv", "a", newline='') as log_file:
+        csv_writer = csv.writer(log_file)
+        data_of_round = [
+            f'{formatted_time}',
+            f'Вы находитесь в локации {current_location_name}',
+            f'У вас {current_experience} опыта и осталось {remaining_time} секунд',
+            f'Прошло уже {elapsed} секунд',
+
+        ]
+        csv_writer.writerow(data_of_round)
+
+
+    # Пример лога игры:
+    # Вы находитесь в Location_0_tm0
+    # У вас 0 опыта и осталось 1234567890.0987654321 секунд
+    # Прошло уже 0:00:00 # TODO стартовая временная метка, метка после отрисовки содержания локации, метка после обработки сущности
+    # Внутри вы видите:
+    # -- Монстра Mob_exp10_tm0
+    # -- Вход в локацию: Location_1_tm10400000
+    # -- Вход в локацию: Location_2_tm333000000
+    # Выберите действие:
+    # 1.Атаковать монстра
+    # 2.Перейти в другую локацию
+    # 3.Выход
+
+
 
     user_action = get_correct_input()
 
