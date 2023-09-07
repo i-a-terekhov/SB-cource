@@ -46,3 +46,26 @@
 # Приконнектится по полученному url-пути к базе данных
 # Инициализировать её через DatabaseProxy()
 # https://peewee.readthedocs.io/en/latest/peewee/database.html#dynamically-defining-a-database
+
+
+# Создать модуль-движок с классом WeatherMaker, необходимым для получения и формирования предсказаний.
+# В нём должен быть метод, получающий прогноз с выбранного вами сайта (парсинг + re) за некоторый диапазон дат,
+# а затем, получив данные, сформировать их в словарь {погода: Облачная, температура: 10, дата:datetime...}
+
+import requests
+from html.parser import HTMLParser
+from bs4 import BeautifulSoup
+
+response = requests.get('https://yandex.com.ge/weather/batumi')
+
+if response.status_code == 200:
+    html_doc = BeautifulSoup(response.text, features='html.parser')
+    # list_of_weather = html_doc.find_all('a', {'class': 'link link_theme_normal text forecast-briefly__day-link yD46sboE link_js_inited'})
+    list_of_weather = html_doc.select('a')
+
+    print(list_of_weather)
+    for values in list_of_weather:
+        print(values.text)
+
+        #TODO Возможно, сайт воспринимает запросы как спам - это нужно проверить
+
