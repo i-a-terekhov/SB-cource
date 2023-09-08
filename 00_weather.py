@@ -55,17 +55,36 @@
 import requests
 from html.parser import HTMLParser
 from bs4 import BeautifulSoup
+from pprint import pprint
 
-response = requests.get('https://yandex.com.ge/weather/batumi')
+# response = requests.get('https://yandex.com.ge/weather/batumi')
+response = requests.get('https://pogoda.ngs.ru/?from=pogoda')
 
 if response.status_code == 200:
     html_doc = BeautifulSoup(response.text, features='html.parser')
-    # list_of_weather = html_doc.find_all('a', {'class': 'link link_theme_normal text forecast-briefly__day-link yD46sboE link_js_inited'})
-    list_of_weather = html_doc.select('a')
 
-    print(list_of_weather)
-    for values in list_of_weather:
-        print(values.text)
+    list_of_date = html_doc.find_all('span', {'class': 'pgd-short-card__date-title'})
+    list_of_period = html_doc.find_all('span', {'class': 'pgd-short-card__content-day-period'})
+
+    temperature_pars = html_doc.find_all('td', {'class': 'elements__section-daytime'})
+    # TODO на странице существуют неактивные в инспекторе строке, одна из них попадает в фильтр find_all
+    temperature_sections = []
+    for elem in temperature_pars:
+        temperature = elem.find_all('div', {'class': 'elements__section__item'})
+        temperature_sections.extend(temperature)
+
+    list_of_content = html_doc.find_all('span', {'class': 'pgd-short-card__content-weather'})
+
+# list_of_weather = html_doc.select('span') # TODO этот метод тоже надо изучить
+
+    pprint(list_of_date)
+    pprint(list_of_period)
+    pprint(temperature_sections)
+    pprint(list_of_content)
+
+    for d, p, c in zip(list_of_date, list_of_period, list_of_content):
+        print(d.text, p.text, c.text)
 
         #TODO Возможно, сайт воспринимает запросы как спам - это нужно проверить
+        # да, это так
 
