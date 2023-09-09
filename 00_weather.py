@@ -63,28 +63,35 @@ response = requests.get('https://pogoda.ngs.ru/?from=pogoda')
 if response.status_code == 200:
     html_doc = BeautifulSoup(response.text, features='html.parser')
 
-    list_of_date = html_doc.find_all('span', {'class': 'pgd-short-card__date-title'})
-    list_of_period = html_doc.find_all('span', {'class': 'pgd-short-card__content-day-period'})
+    wrong_tags = html_doc.find_all('section', {'class': 'content-section content-section-shortrange_forecast'})
+    for wrong_tag in wrong_tags:
+        wrong_tag.decompose()
+    print('Удалены лишние теги')
+    print('-' * 100)
+    #TODO при исключении content-section необходимо пересмотреть фильтры остальных листов
 
-    temperature_pars = html_doc.find_all('td', {'class': 'elements__section-daytime'})
-    # TODO на странице существуют неактивные в инспекторе строке, одна из них попадает в фильтр find_all
-    temperature_sections = []
-    for elem in temperature_pars:
-        temperature = elem.find_all('div', {'class': 'elements__section__item'})
-        temperature_sections.extend(temperature)
+    list_of_date = html_doc.find_all('span', {'class': 'pgd-short-card__date-title'})
+    print('list_of_date:')
+    pprint(list_of_date)
+
+    list_of_period = html_doc.find_all('span', {'class': 'pgd-short-card__content-day-period'})
+    print('list_of_period:')
+    pprint(list_of_period)
+
+    list_of_extra_period = html_doc.find_all('td', {'class': 'elements__section-daytime'})
+    # pprint(list_of_extra_period)
+    extra_days = []
+    for extra_day in list_of_extra_period:
+        temperature = extra_day.find_all('div', {'class': 'elements__section__item'})
+        extra_days.extend(temperature)
+    print('extra_days:')
+    pprint(extra_days)
 
     list_of_content = html_doc.find_all('span', {'class': 'pgd-short-card__content-weather'})
-
-# list_of_weather = html_doc.select('span') # TODO этот метод тоже надо изучить
-
-    pprint(list_of_date)
-    pprint(list_of_period)
-    pprint(temperature_sections)
+    print('list_of_content:')
     pprint(list_of_content)
 
-    for d, p, c in zip(list_of_date, list_of_period, list_of_content):
-        print(d.text, p.text, c.text)
+    # for d, p, c in zip(list_of_date, list_of_period, list_of_content):
+    #     print(d.text, p.text, c.text)
 
-        #TODO Возможно, сайт воспринимает запросы как спам - это нужно проверить
-        # да, это так
 
