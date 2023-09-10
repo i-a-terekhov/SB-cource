@@ -57,13 +57,18 @@ from html.parser import HTMLParser
 from bs4 import BeautifulSoup
 from pprint import pprint
 
-# response = requests.get('https://yandex.com.ge/weather/batumi')
 response = requests.get('https://pogoda.ngs.ru/?from=pogoda')
 
 if response.status_code == 200:
+    html_doc_file = response.text
+    with open('output.html', 'w', encoding='utf-8') as file:
+        # Записываем HTML-код в файл
+        file.write(html_doc_file)
+    print("HTML-код сохранен в файл 'output.html'")
+
     html_doc = BeautifulSoup(response.text, features='html.parser')
 
-    wrong_tags = html_doc.find_all('section', {'class': 'content-section content-section-shortrange_forecast'})
+    wrong_tags = html_doc.find_all('table', {'class': 'pgd-detailed-cards elements pgd-hidden'})
     for wrong_tag in wrong_tags:
         wrong_tag.decompose()
     print('Удалены лишние теги')
@@ -79,6 +84,7 @@ if response.status_code == 200:
     pprint(list_of_period)
 
     list_of_extra_period = html_doc.find_all('td', {'class': 'elements__section-daytime'})
+    print('Длина листа экстра периода', len(list_of_extra_period))
     # pprint(list_of_extra_period)
     extra_days = []
     for extra_day in list_of_extra_period:
