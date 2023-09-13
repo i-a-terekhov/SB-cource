@@ -60,44 +60,56 @@ from pprint import pprint
 response = requests.get('https://pogoda.ngs.ru/?from=pogoda')
 
 if response.status_code == 200:
-    html_doc_file = response.text
-    with open('output.html', 'w', encoding='utf-8') as file:
-        # Записываем HTML-код в файл
-        file.write(html_doc_file)
-    print("HTML-код сохранен в файл 'output.html'")
+    text_of_response = response.text
+    # with open('output.html', 'w', encoding='utf-8') as file:
+    #     file.write(text_of_response)
+    # print("HTML-код сохранен в файл 'output.html'")
 
-    html_doc = BeautifulSoup(response.text, features='html.parser')
+    html_doc = BeautifulSoup(text_of_response, features='html.parser')
 
-    wrong_tags = html_doc.find_all('table', {'class': 'pgd-detailed-cards elements pgd-hidden'})
-    for wrong_tag in wrong_tags:
-        wrong_tag.decompose()
+    wrong_tag = html_doc.find('table', {'class': 'pgd-detailed-cards elements pgd-hidden'})
+    wrong_tag.decompose()
     print('Удалены лишние теги')
     print('-' * 100)
-    #TODO при исключении content-section необходимо пересмотреть фильтры остальных листов
 
-    list_of_date = html_doc.find_all('span', {'class': 'pgd-short-card__date-title'})
-    print('list_of_date:')
-    pprint(list_of_date)
+    #TODO list_of_all_dates требует разделения на две переменных: для стандартных и экстра дней
+    list_of_all_dates = html_doc.find_all('span', {'class': 'pgd-short-card__date-title'})
+    print('list_of_all_dates:')
+    pprint(list_of_all_dates)
+    print('-' * 100)
 
-    list_of_period = html_doc.find_all('span', {'class': 'pgd-short-card__content-day-period'})
-    print('list_of_period:')
-    pprint(list_of_period)
+    periods_in_stand_dates = html_doc.find_all('span', {'class': 'pgd-short-card__content-day-period'})
+    print('periods_in_stand_dates:')
+    pprint(periods_in_stand_dates)
+    print('-' * 100)
 
-    list_of_extra_period = html_doc.find_all('td', {'class': 'elements__section-daytime'})
-    print('Длина листа экстра периода', len(list_of_extra_period))
-    # pprint(list_of_extra_period)
-    extra_days = []
-    for extra_day in list_of_extra_period:
-        temperature = extra_day.find_all('div', {'class': 'elements__section__item'})
-        extra_days.extend(temperature)
-    print('extra_days:')
-    pprint(extra_days)
+    periods_in_extra_dates = html_doc.find_all('td', {'class': 'elements__section-daytime'})
+    extra_days_periods = []
+    for extra_day in periods_in_extra_dates:
+        period_of_one_extra_day = extra_day.find_all('div', {'class': 'elements__section__item'})
+        extra_days_periods.extend(period_of_one_extra_day)
+    print('periods_in_extra_dates:')
+    pprint(extra_days_periods)
+    print('-' * 100)
 
-    list_of_content = html_doc.find_all('span', {'class': 'pgd-short-card__content-weather'})
-    print('list_of_content:')
-    pprint(list_of_content)
+    list_of_content_stand_days = html_doc.find('div', {'class': 'pgd-short-cards pgd-short-cards_3-cards'})
+    content = list_of_content_stand_days.find_all('span', {'class': 'pgd-short-card__content-weather'})
+    print('list_of_content_stand_days:')
+    pprint(content)
+    print('-' * 100)
 
-    # for d, p, c in zip(list_of_date, list_of_period, list_of_content):
+    list_of_extra_content = html_doc.find_all('td', {'class': 'elements__section-temperature'})
+    extra_term = []
+    for extra_temp in list_of_extra_content:
+        temp = extra_temp.find_all('div', {'class': 'elements__section__item'})
+        #TODO добавить отображение только содержания тегов в предыдущие листы по этому примеру:
+        for element in temp:
+            text_content = element.get_text(strip=True)  # strip=True удаляет лишние пробелы и символы новой строки
+            extra_term.append(text_content)
+    print('list_of_extra_content:')
+    pprint(extra_term)
+
+    # for d, p, c in zip(list_of_all_dates, periods_in_stand_dates, list_of_content_stand_days):
     #     print(d.text, p.text, c.text)
 
 
