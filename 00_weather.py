@@ -61,55 +61,59 @@ response = requests.get('https://pogoda.ngs.ru/?from=pogoda')
 
 if response.status_code == 200:
     text_of_response = response.text
-    # with open('output.html', 'w', encoding='utf-8') as file:
-    #     file.write(text_of_response)
-    # print("HTML-код сохранен в файл 'output.html'")
-
     html_doc = BeautifulSoup(text_of_response, features='html.parser')
 
-    wrong_tag = html_doc.find('table', {'class': 'pgd-detailed-cards elements pgd-hidden'})
-    wrong_tag.decompose()
-    print('Удалены лишние теги')
-    print('-' * 100)
+    tags_of_stand_days_dates = html_doc.find('div', {'class': 'pgd-short-cards pgd-short-cards_3-cards'}).find_all(
+        'span', {'class': 'pgd-short-card__date-title'})
+    stand_days_dates = []
+    for tag in tags_of_stand_days_dates:
+        stand_days_dates.append(tag.get_text(strip=True))
 
-    #TODO list_of_all_dates требует разделения на две переменных: для стандартных и экстра дней
-    list_of_all_dates = html_doc.find_all('span', {'class': 'pgd-short-card__date-title'})
-    print('list_of_all_dates:')
-    pprint(list_of_all_dates)
-    print('-' * 100)
+    tags_of_extra_days_dates = html_doc.find('section', {'class': 'content-section-longrange_forecast'}).find_all(
+        'td', {'class': 'elements__section-day'})
+    extra_days_dates = []
+    for tag in tags_of_extra_days_dates:
+        extra_days_dates.append(tag.get_text(strip=True))
 
-    periods_in_stand_dates = html_doc.find_all('span', {'class': 'pgd-short-card__content-day-period'})
-    print('periods_in_stand_dates:')
-    pprint(periods_in_stand_dates)
-    print('-' * 100)
+    tags_of_stand_days_times = html_doc.find_all('span', {'class': 'pgd-short-card__content-day-period'})
+    stand_days_times = []
+    for tag in tags_of_stand_days_times:
+        stand_days_times.append(tag.get_text(strip=True))
 
-    periods_in_extra_dates = html_doc.find_all('td', {'class': 'elements__section-daytime'})
-    extra_days_periods = []
-    for extra_day in periods_in_extra_dates:
-        period_of_one_extra_day = extra_day.find_all('div', {'class': 'elements__section__item'})
-        extra_days_periods.extend(period_of_one_extra_day)
-    print('periods_in_extra_dates:')
-    pprint(extra_days_periods)
-    print('-' * 100)
+    tags_of_extra_days_times = html_doc.find_all('td', {'class': 'elements__section-daytime'})
+    extra_days_times = []
+    for tags in tags_of_extra_days_times:
+        tags_of_one_extra_day_times = tags.find_all('div', {'class': 'elements__section__item'})
+        for tag in tags_of_one_extra_day_times:
+            extra_days_times.append(tag.get_text(strip=True))
 
-    list_of_content_stand_days = html_doc.find('div', {'class': 'pgd-short-cards pgd-short-cards_3-cards'})
-    content = list_of_content_stand_days.find_all('span', {'class': 'pgd-short-card__content-weather'})
-    print('list_of_content_stand_days:')
-    pprint(content)
-    print('-' * 100)
+    tags_of_stand_days_content = html_doc.find('div', {'class': 'pgd-short-cards pgd-short-cards_3-cards'}).find_all(
+        'span', {'class': 'pgd-short-card__content-weather'})
+    stand_days_contents = []
+    for tag in tags_of_stand_days_content:
+        stand_days_contents.append(tag.get_text(strip=True))
 
-    list_of_extra_content = html_doc.find_all('td', {'class': 'elements__section-temperature'})
-    extra_term = []
-    for extra_temp in list_of_extra_content:
-        temp = extra_temp.find_all('div', {'class': 'elements__section__item'})
-        #TODO добавить отображение только содержания тегов в предыдущие листы по этому примеру:
-        for element in temp:
-            text_content = element.get_text(strip=True)  # strip=True удаляет лишние пробелы и символы новой строки
-            extra_term.append(text_content)
-    print('list_of_extra_content:')
-    pprint(extra_term)
+    tags_of_extra_days_contents = html_doc.find('section', {'class': 'content-section-longrange_forecast'}).find_all(
+        'td', {'class': 'elements__section-temperature'})
+    extra_days_contents = []
+    for tags in tags_of_extra_days_contents:
+        tags_of_one_extra_day_content = tags.find_all('div', {'class': 'elements__section__view-short'})
+        for tag in tags_of_one_extra_day_content:
+            extra_days_contents.append(tag.get_text(strip=True))
 
-    # for d, p, c in zip(list_of_all_dates, periods_in_stand_dates, list_of_content_stand_days):
-    #     print(d.text, p.text, c.text)
+    all_days_dates = []
+    for date in stand_days_dates:
+        all_days_dates.extend([date, date, date, date])
+    for date in extra_days_dates:
+        all_days_dates.extend([date, date, date, date])
 
+    all_days_times = []
+    all_days_times.extend(stand_days_times)
+    all_days_times.extend(extra_days_times)
 
+    all_days_contents = []
+    all_days_contents.extend(stand_days_contents)
+    all_days_contents.extend(extra_days_contents)
+
+    for d, t, c in zip(all_days_dates, all_days_times, all_days_contents):
+        print(d, t, c)
