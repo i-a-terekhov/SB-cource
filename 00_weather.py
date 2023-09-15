@@ -57,6 +57,14 @@ from html.parser import HTMLParser
 from bs4 import BeautifulSoup
 from pprint import pprint
 
+
+def tags_to_list(tags):
+    list = []
+    for tag in tags:
+        list.append(tag.get_text(strip=True))
+    return list
+
+
 response = requests.get('https://pogoda.ngs.ru/?from=pogoda')
 
 if response.status_code == 200:
@@ -65,41 +73,31 @@ if response.status_code == 200:
 
     tags_of_stand_days_dates = html_doc.find('div', {'class': 'pgd-short-cards pgd-short-cards_3-cards'}).find_all(
         'span', {'class': 'pgd-short-card__date-title'})
-    stand_days_dates = []
-    for tag in tags_of_stand_days_dates:
-        stand_days_dates.append(tag.get_text(strip=True))
+    stand_days_dates = tags_to_list(tags_of_stand_days_dates)
 
     tags_of_extra_days_dates = html_doc.find('section', {'class': 'content-section-longrange_forecast'}).find_all(
         'td', {'class': 'elements__section-day'})
-    extra_days_dates = []
-    for tag in tags_of_extra_days_dates:
-        extra_days_dates.append(tag.get_text(strip=True))
+    extra_days_dates = tags_to_list(tags_of_extra_days_dates)
 
     tags_of_stand_days_times = html_doc.find_all('span', {'class': 'pgd-short-card__content-day-period'})
-    stand_days_times = []
-    for tag in tags_of_stand_days_times:
-        stand_days_times.append(tag.get_text(strip=True))
+    stand_days_times = tags_to_list(tags_of_stand_days_times)
 
     tags_of_extra_days_times = html_doc.find_all('td', {'class': 'elements__section-daytime'})
     extra_days_times = []
     for tags in tags_of_extra_days_times:
         tags_of_one_extra_day_times = tags.find_all('div', {'class': 'elements__section__item'})
-        for tag in tags_of_one_extra_day_times:
-            extra_days_times.append(tag.get_text(strip=True))
+        extra_days_times.extend(tags_to_list(tags_of_one_extra_day_times))
 
     tags_of_stand_days_content = html_doc.find('div', {'class': 'pgd-short-cards pgd-short-cards_3-cards'}).find_all(
         'span', {'class': 'pgd-short-card__content-weather'})
-    stand_days_contents = []
-    for tag in tags_of_stand_days_content:
-        stand_days_contents.append(tag.get_text(strip=True))
+    stand_days_contents = tags_to_list(tags_of_stand_days_content)
 
     tags_of_extra_days_contents = html_doc.find('section', {'class': 'content-section-longrange_forecast'}).find_all(
         'td', {'class': 'elements__section-temperature'})
     extra_days_contents = []
     for tags in tags_of_extra_days_contents:
         tags_of_one_extra_day_content = tags.find_all('div', {'class': 'elements__section__view-short'})
-        for tag in tags_of_one_extra_day_content:
-            extra_days_contents.append(tag.get_text(strip=True))
+        extra_days_contents.extend(tags_to_list(tags_of_one_extra_day_content))
 
     all_days_dates = []
     for date in stand_days_dates:
