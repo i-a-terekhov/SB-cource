@@ -61,7 +61,11 @@ from pprint import pprint
 def tags_to_list(tags):
     list = []
     for tag in tags:
-        list.append(tag.get_text(strip=True))
+        received_text = tag.get_text(strip=True)
+        if received_text != '':
+            list.append(received_text)
+        else:
+            list.append(tag.get('title'))
     return list
 
 
@@ -71,12 +75,12 @@ if response.status_code == 200:
     text_of_response = response.text
     html_doc = BeautifulSoup(text_of_response, features='html.parser')
 
-    tags_of_stand_days_dates = html_doc.find('div', {'class': 'pgd-short-cards pgd-short-cards_3-cards'}).find_all(
-        'span', {'class': 'pgd-short-card__date-title'})
+    tags_of_stand_days_dates = html_doc.find('div', {'class': 'pgd-short-cards pgd-short-cards_3-cards'}
+                                             ).find_all('span', {'class': 'pgd-short-card__date-title'})
     stand_days_dates = tags_to_list(tags_of_stand_days_dates)
 
-    tags_of_extra_days_dates = html_doc.find('section', {'class': 'content-section-longrange_forecast'}).find_all(
-        'td', {'class': 'elements__section-day'})
+    tags_of_extra_days_dates = html_doc.find('section', {'class': 'content-section-longrange_forecast'}
+                                             ).find_all('td', {'class': 'elements__section-day'})
     extra_days_dates = tags_to_list(tags_of_extra_days_dates)
 
     tags_of_stand_days_times = html_doc.find_all('span', {'class': 'pgd-short-card__content-day-period'})
@@ -88,17 +92,29 @@ if response.status_code == 200:
         tags_of_one_extra_day_times = tags.find_all('div', {'class': 'elements__section__item'})
         extra_days_times.extend(tags_to_list(tags_of_one_extra_day_times))
 
-    tags_of_stand_days_content = html_doc.find('div', {'class': 'pgd-short-cards pgd-short-cards_3-cards'}).find_all(
-        'span', {'class': 'pgd-short-card__content-weather'})
+    tags_of_stand_days_content = html_doc.find('div', {'class': 'pgd-short-cards pgd-short-cards_3-cards'}
+                                               ).find_all('span', {'class': 'pgd-short-card__content-weather'})
     stand_days_contents = tags_to_list(tags_of_stand_days_content)
 
-    tags_of_extra_days_contents = html_doc.find('section', {'class': 'content-section-longrange_forecast'}).find_all(
-        'td', {'class': 'elements__section-temperature'})
+    tags_of_extra_days_contents = html_doc.find('section', {'class': 'content-section-longrange_forecast'}
+                                                ).find_all('td', {'class': 'elements__section-temperature'})
     extra_days_contents = []
     for tags in tags_of_extra_days_contents:
         tags_of_one_extra_day_content = tags.find_all('div', {'class': 'elements__section__view-short'})
         extra_days_contents.extend(tags_to_list(tags_of_one_extra_day_content))
 
+    tags_of_stand_days_weather = html_doc.find('div', {'class': 'pgd-short-cards pgd-short-cards_3-cards'}
+                                               ).find_all('i', {'class': 'icon-weather'})
+    stand_days_weather = tags_to_list(tags_of_stand_days_weather)
+
+    tags_of_extra_days_weather = html_doc.find('section', {'class': 'content-section-longrange_forecast'}
+                                               ).find_all('td', {'class': 'elements__section-weather'})
+    extra_days_weather = []
+    for tags in tags_of_extra_days_weather:
+        tags_of_one_extra_day_weather = tags.find_all('i', {'class': 'icon-weather'})
+        extra_days_weather.extend(tags_to_list(tags_of_one_extra_day_weather))
+
+    # TODO добавить форматирование дат под один стандарт:
     all_days_dates = []
     for date in stand_days_dates:
         all_days_dates.extend([date, date, date, date])
@@ -113,5 +129,11 @@ if response.status_code == 200:
     all_days_contents.extend(stand_days_contents)
     all_days_contents.extend(extra_days_contents)
 
-    for d, t, c in zip(all_days_dates, all_days_times, all_days_contents):
-        print(d, t, c)
+    all_days_weather = []
+    all_days_weather.extend(stand_days_weather)
+    all_days_weather.extend(extra_days_weather)
+
+    for d, t, c, i in zip(all_days_dates, all_days_times, all_days_contents, all_days_weather):
+        print(f'{d:>30} - {t:7} {c} - {i}')
+
+    print(all_days_dates)
