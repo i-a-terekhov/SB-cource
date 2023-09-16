@@ -56,6 +56,7 @@ import requests
 from html.parser import HTMLParser
 from bs4 import BeautifulSoup
 from pprint import pprint
+import re
 
 
 def tags_to_list(tags):
@@ -69,6 +70,16 @@ def tags_to_list(tags):
     return list
 
 
+#TODO добавить число и месяц:
+def extract_dates(date_list):
+    formatted_dates = []
+    for date_str in date_list:
+        day_of_week = re.search(r'[а-я]+(?=,\s\d)|[а-я]+(?=\d+)', date_str)
+        day_of_week = day_of_week.group()
+        formatted_dates.append(day_of_week)
+    return formatted_dates
+
+
 response = requests.get('https://pogoda.ngs.ru/?from=pogoda')
 
 if response.status_code == 200:
@@ -77,48 +88,51 @@ if response.status_code == 200:
 
     tags_of_stand_days_dates = html_doc.find('div', {'class': 'pgd-short-cards pgd-short-cards_3-cards'}
                                              ).find_all('span', {'class': 'pgd-short-card__date-title'})
-    stand_days_dates = tags_to_list(tags_of_stand_days_dates)
+    stand_days_dates = tags_to_list(tags=tags_of_stand_days_dates)
+    print(stand_days_dates)
+    f_stand_days_dates = extract_dates(date_list=stand_days_dates)
 
     tags_of_extra_days_dates = html_doc.find('section', {'class': 'content-section-longrange_forecast'}
                                              ).find_all('td', {'class': 'elements__section-day'})
-    extra_days_dates = tags_to_list(tags_of_extra_days_dates)
+    extra_days_dates = tags_to_list(tags=tags_of_extra_days_dates)
+    print(extra_days_dates)
+    f_extra_days_dates = extract_dates(date_list=extra_days_dates)
 
     tags_of_stand_days_times = html_doc.find_all('span', {'class': 'pgd-short-card__content-day-period'})
-    stand_days_times = tags_to_list(tags_of_stand_days_times)
+    stand_days_times = tags_to_list(tags=tags_of_stand_days_times)
 
     tags_of_extra_days_times = html_doc.find_all('td', {'class': 'elements__section-daytime'})
     extra_days_times = []
     for tags in tags_of_extra_days_times:
         tags_of_one_extra_day_times = tags.find_all('div', {'class': 'elements__section__item'})
-        extra_days_times.extend(tags_to_list(tags_of_one_extra_day_times))
+        extra_days_times.extend(tags_to_list(tags=tags_of_one_extra_day_times))
 
     tags_of_stand_days_content = html_doc.find('div', {'class': 'pgd-short-cards pgd-short-cards_3-cards'}
                                                ).find_all('span', {'class': 'pgd-short-card__content-weather'})
-    stand_days_contents = tags_to_list(tags_of_stand_days_content)
+    stand_days_contents = tags_to_list(tags=tags_of_stand_days_content)
 
     tags_of_extra_days_contents = html_doc.find('section', {'class': 'content-section-longrange_forecast'}
                                                 ).find_all('td', {'class': 'elements__section-temperature'})
     extra_days_contents = []
     for tags in tags_of_extra_days_contents:
         tags_of_one_extra_day_content = tags.find_all('div', {'class': 'elements__section__view-short'})
-        extra_days_contents.extend(tags_to_list(tags_of_one_extra_day_content))
+        extra_days_contents.extend(tags_to_list(tags=tags_of_one_extra_day_content))
 
     tags_of_stand_days_weather = html_doc.find('div', {'class': 'pgd-short-cards pgd-short-cards_3-cards'}
                                                ).find_all('i', {'class': 'icon-weather'})
-    stand_days_weather = tags_to_list(tags_of_stand_days_weather)
+    stand_days_weather = tags_to_list(tags=tags_of_stand_days_weather)
 
     tags_of_extra_days_weather = html_doc.find('section', {'class': 'content-section-longrange_forecast'}
                                                ).find_all('td', {'class': 'elements__section-weather'})
     extra_days_weather = []
     for tags in tags_of_extra_days_weather:
         tags_of_one_extra_day_weather = tags.find_all('i', {'class': 'icon-weather'})
-        extra_days_weather.extend(tags_to_list(tags_of_one_extra_day_weather))
+        extra_days_weather.extend(tags_to_list(tags=tags_of_one_extra_day_weather))
 
-    # TODO добавить форматирование дат под один стандарт:
     all_days_dates = []
-    for date in stand_days_dates:
+    for date in f_stand_days_dates:
         all_days_dates.extend([date, date, date, date])
-    for date in extra_days_dates:
+    for date in f_extra_days_dates:
         all_days_dates.extend([date, date, date, date])
 
     all_days_times = []
@@ -136,4 +150,3 @@ if response.status_code == 200:
     for d, t, c, i in zip(all_days_dates, all_days_times, all_days_contents, all_days_weather):
         print(f'{d:>30} - {t:7} {c} - {i}')
 
-    print(all_days_dates)
