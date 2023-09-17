@@ -48,10 +48,6 @@
 # https://peewee.readthedocs.io/en/latest/peewee/database.html#dynamically-defining-a-database
 
 
-# Создать модуль-движок с классом WeatherMaker, необходимым для получения и формирования предсказаний.
-# В нём должен быть метод, получающий прогноз с выбранного вами сайта (парсинг + re) за некоторый диапазон дат,
-# а затем, получив данные, сформировать их в словарь {погода: Облачная, температура: 10, дата:datetime...}
-
 import requests
 from html.parser import HTMLParser
 from bs4 import BeautifulSoup
@@ -105,11 +101,12 @@ if response.status_code == 200:
     all_days_times = []
     tags_of_stand_days_times = html_doc.find_all('span', {'class': 'pgd-short-card__content-day-period'})
     all_days_times.extend(tags_to_list(tags=tags_of_stand_days_times))
-    all_days_times.pop() #TODO данный костыль не помог, т.к. далее находятся еще около 8 лишних значений
-    tags_of_extra_days_times = html_doc.find_all('td', {'class': 'elements__section-daytime'})
+    tags_of_extra_days_times = html_doc.find('table', {'data-weather-cards-count': '10forecast'}
+                                             ).find_all('td', {'class': 'elements__section-daytime'})
     for tags in tags_of_extra_days_times:
         tags_of_one_extra_day_times = tags.find_all('div', {'class': 'elements__section__item'})
         all_days_times.extend(tags_to_list(tags=tags_of_one_extra_day_times))
+    pprint(all_days_times)
 
     all_days_contents = []
     tags_of_stand_days_content = html_doc.find('div', {'class': 'pgd-short-cards pgd-short-cards_3-cards'}
@@ -131,18 +128,13 @@ if response.status_code == 200:
         tags_of_one_extra_day_weather = tags.find_all('i', {'class': 'icon-weather'})
         all_days_weather.extend(tags_to_list(tags=tags_of_one_extra_day_weather))
 
+    #TODO Проверку удалить:
     print('Ввод дополнительного значения для проверки перезаписи')
     all_days_dates.extend(['26 сентября'])
-    print(len(all_days_dates))
     all_days_weekdays.extend(['ХХХХХХХХХХХХХХХХХХХХХ'])
-    print(len(all_days_weekdays))
-    #TODO выявлено некорректное формирование списка времен: значительно больше значений
-    all_days_times.extend(['ХХХХХХХХХХХХХХХХХХХХХ'])
-    print(len(all_days_times))
+    all_days_times.extend(['вечер'])
     all_days_contents.extend(['ХХХХХХХХХХХХХХХХХХХХХ'])
-    print(len(all_days_contents))
     all_days_weather.extend(['ХХХХХХХХХХХХХХХХХХХХХ'])
-    print(len(all_days_weather))
 
     new_weather_dict = {}
     for d, wd, t, c, w in zip(all_days_dates, all_days_weekdays, all_days_times, all_days_contents, all_days_weather):
@@ -156,5 +148,5 @@ if response.status_code == 200:
             new_weather_dict[d] = {}
 
         new_weather_dict[d][t] = entry
-    # pprint(new_weather_dict)
+    pprint(new_weather_dict)
 
