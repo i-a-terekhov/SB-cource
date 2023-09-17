@@ -49,10 +49,10 @@
 
 
 import requests
-from html.parser import HTMLParser
 from bs4 import BeautifulSoup
 from pprint import pprint
 import re
+import cv2
 
 
 class WeatherScraper:
@@ -183,9 +183,37 @@ class WeatherScraper:
         return self.new_weather_dict
 
 
+class ImageMaker:
+
+    def __init__(self):
+        self.form = 'python_snippets/external_data/probe.jpg'
+
+    def viewImage(self, image, name_of_window):
+        cv2.namedWindow(name_of_window, cv2.WINDOW_NORMAL)
+        cv2.imshow(name_of_window, image)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+
+    def run(self):
+        image_cv2 = cv2.imread(self.form)
+        cropped = image_cv2[20:25, 10:15]
+        self.viewImage(cropped, 'Cropped version')
+
+
 if __name__ == "__main__":
     url = 'https://pogoda.ngs.ru/?from=pogoda'
-    get_weather = WeatherScraper(url)
-    get_weather.run()
-    pprint(get_weather.return_the_final_dict())
+    # get_weather = WeatherScraper(url)
+    # get_weather.run()
+    # pprint(get_weather.return_the_final_dict())
 
+    img = ImageMaker()
+    img.run()
+
+
+# Добавить класс ImageMaker.
+# Снабдить его методом рисования открытки
+# (использовать OpenCV, в качестве заготовки брать lesson_016/python_snippets/external_data/probe.jpg):
+#   С текстом, состоящим из полученных данных (пригодится cv2.putText)
+#   С изображением, соответствующим типу погоды
+# (хранятся в lesson_016/python_snippets/external_data/weather_img ,но можно нарисовать/добавить свои)
+#   В качестве фона добавить градиент цвета, отражающего тип погоды
