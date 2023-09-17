@@ -96,12 +96,16 @@ if response.status_code == 200:
     raw_days_dates.extend(tags_to_list(tags=tags_of_extra_days_dates))
     f_raw_days_dates = extract_dates(date_list=raw_days_dates)
     all_days_dates = []
+    all_days_weekdays = []
     for date in f_raw_days_dates:
+        date, weekday = date.split(', ')
         all_days_dates.extend([date, date, date, date])
+        all_days_weekdays.extend([weekday, weekday, weekday, weekday])
 
     all_days_times = []
     tags_of_stand_days_times = html_doc.find_all('span', {'class': 'pgd-short-card__content-day-period'})
     all_days_times.extend(tags_to_list(tags=tags_of_stand_days_times))
+    all_days_times.pop() #TODO данный костыль не помог, т.к. далее находятся еще около 8 лишних значений
     tags_of_extra_days_times = html_doc.find_all('td', {'class': 'elements__section-daytime'})
     for tags in tags_of_extra_days_times:
         tags_of_one_extra_day_times = tags.find_all('div', {'class': 'elements__section__item'})
@@ -127,6 +131,30 @@ if response.status_code == 200:
         tags_of_one_extra_day_weather = tags.find_all('i', {'class': 'icon-weather'})
         all_days_weather.extend(tags_to_list(tags=tags_of_one_extra_day_weather))
 
-    for d, t, c, w in zip(all_days_dates, all_days_times, all_days_contents, all_days_weather):
-        print(f'{d:>30} - {t:7} {c} - {w}')
+    print('Ввод дополнительного значения для проверки перезаписи')
+    all_days_dates.extend(['26 сентября'])
+    print(len(all_days_dates))
+    all_days_weekdays.extend(['ХХХХХХХХХХХХХХХХХХХХХ'])
+    print(len(all_days_weekdays))
+    #TODO выявлено некорректное формирование списка времен: значительно больше значений
+    all_days_times.extend(['ХХХХХХХХХХХХХХХХХХХХХ'])
+    print(len(all_days_times))
+    all_days_contents.extend(['ХХХХХХХХХХХХХХХХХХХХХ'])
+    print(len(all_days_contents))
+    all_days_weather.extend(['ХХХХХХХХХХХХХХХХХХХХХ'])
+    print(len(all_days_weather))
+
+    new_weather_dict = {}
+    for d, wd, t, c, w in zip(all_days_dates, all_days_weekdays, all_days_times, all_days_contents, all_days_weather):
+        # print(f'{d:>13}, {wd:12} - {t:6} {c} - {w}')
+        entry = {
+            'weekday': wd,
+            'content': c,
+            'weather': w
+        }
+        if d not in new_weather_dict:
+            new_weather_dict[d] = {}
+
+        new_weather_dict[d][t] = entry
+    # pprint(new_weather_dict)
 
