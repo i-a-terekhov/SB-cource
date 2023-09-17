@@ -55,98 +55,137 @@ from pprint import pprint
 import re
 
 
-def tags_to_list(tags):
-    list = []
-    for tag in tags:
-        received_text = tag.get_text(strip=True)
-        if received_text != '':
-            list.append(received_text)
-        else:
-            list.append(tag.get('title'))
-    return list
+class WeatherScraper:
+    def __init__(self, url):
+        self.url = url
+        self.weather_row_data = {}
+        self.new_weather_dict = {}
+
+    def _fetch_data(self):
+        response = requests.get(self.url)
+        if response.status_code == 200:
+            text_of_response = response.text
+            html_doc = BeautifulSoup(text_of_response, features='html.parser')
+
+            self._extract_dates(html_doc)
+            self._extract_times(html_doc)
+            self._extract_contents(html_doc)
+            self._extract_weather(html_doc)
+
+    def _tags_to_list(self, tags):
+        list_of_text = []
+        for tag in tags:
+            received_text = tag.get_text(strip=True)
+            if received_text != '':
+                list_of_text.append(received_text)
+            else:
+                list_of_text.append(tag.get('title'))
+        return list_of_text
+
+    def _regular_filter(self, date_list):
+        formatted_dates = []
+        for date_str in date_list:
+            date_of_month = re.search(r'\d+', date_str).group()
+            month = re.search(r'(?!\s)\w+$', date_str).group()
+            day_of_week = re.search(r'[а-я]+(?=,\s\d)|[а-я]+(?=\d+)', date_str).group()
+            formatted_date_str = date_of_month + ' ' + month + ', ' + day_of_week
+            formatted_dates.append(formatted_date_str)
+        return formatted_dates
+
+    def _extract_dates(self, html_doc):
+        raw_days_dates = []
+
+        tags_of_stand_days_dates = html_doc.find('div', {'class': 'pgd-short-cards pgd-short-cards_3-cards'}
+                                                 ).find_all('span', {'class': 'pgd-short-card__date-title'})
+        raw_days_dates.extend(self._tags_to_list(tags=tags_of_stand_days_dates))
+        tags_of_extra_days_dates = html_doc.find('section', {'class': 'content-section-longrange_forecast'}
+                                                 ).find_all('td', {'class': 'elements__section-day'})
+        raw_days_dates.extend(self._tags_to_list(tags=tags_of_extra_days_dates))
+
+        f_raw_days_dates = self._regular_filter(date_list=raw_days_dates)
+        all_days_dates = []
+        all_days_weekdays = []
+        for date in f_raw_days_dates:
+            date, weekday = date.split(', ')
+            all_days_dates.extend([date, date, date, date])
+            all_days_weekdays.extend([weekday, weekday, weekday, weekday])
+
+        self.weather_row_data['dates'] = all_days_dates
+        self.weather_row_data['weekdays'] = all_days_weekdays
+
+    def _extract_times(self, html_doc):
+        all_days_times = []
+
+        tags_of_stand_days_times = html_doc.find_all('span', {'class': 'pgd-short-card__content-day-period'})
+        all_days_times.extend(self._tags_to_list(tags=tags_of_stand_days_times))
+        tags_of_extra_days_times = html_doc.find('table', {'data-weather-cards-count': '10forecast'}
+                                                 ).find_all('td', {'class': 'elements__section-daytime'})
+        for tags in tags_of_extra_days_times:
+            tags_of_one_extra_day_times = tags.find_all('div', {'class': 'elements__section__item'})
+            all_days_times.extend(self._tags_to_list(tags=tags_of_one_extra_day_times))
+
+        self.weather_row_data['times'] = all_days_times
+
+    def _extract_contents(self, html_doc):
+        all_days_contents = []
+
+        tags_of_stand_days_content = html_doc.find('div', {'class': 'pgd-short-cards pgd-short-cards_3-cards'}
+                                                   ).find_all('span', {'class': 'pgd-short-card__content-weather'})
+        all_days_contents.extend(self._tags_to_list(tags=tags_of_stand_days_content))
+        tags_of_extra_days_contents = html_doc.find('section', {'class': 'content-section-longrange_forecast'}
+                                                    ).find_all('td', {'class': 'elements__section-temperature'})
+        for tags in tags_of_extra_days_contents:
+            tags_of_one_extra_day_content = tags.find_all('div', {'class': 'elements__section__view-short'})
+            all_days_contents.extend(self._tags_to_list(tags=tags_of_one_extra_day_content))
+
+        self.weather_row_data['contents'] = all_days_contents
+
+    def _extract_weather(self, html_doc):
+        all_days_weather = []
+
+        tags_of_stand_days_weather = html_doc.find('div', {'class': 'pgd-short-cards pgd-short-cards_3-cards'}
+                                                   ).find_all('i', {'class': 'icon-weather'})
+        all_days_weather.extend(self._tags_to_list(tags=tags_of_stand_days_weather))
+        tags_of_extra_days_weather = html_doc.find('section', {'class': 'content-section-longrange_forecast'}
+                                                   ).find_all('td', {'class': 'elements__section-weather'})
+        for tags in tags_of_extra_days_weather:
+            tags_of_one_extra_day_weather = tags.find_all('i', {'class': 'icon-weather'})
+            all_days_weather.extend(self._tags_to_list(tags=tags_of_one_extra_day_weather))
+
+        self.weather_row_data['weather'] = all_days_weather
+
+    def _create_weather_dict(self):
+        dates = self.weather_row_data['dates']
+        weekdays = self.weather_row_data['weekdays']
+        times = self.weather_row_data['times']
+        contents = self.weather_row_data['contents']
+        weather = self.weather_row_data['weather']
+
+        for d, wd, t, c, w in zip(dates, weekdays, times, contents, weather):
+            # print(f'{d:>13}, {wd:12} - {t:6} {c} - {w}')
+            entry = {
+                'weekday': wd,
+                'content': c,
+                'weather': w
+            }
+            if d not in self.new_weather_dict:
+                self.new_weather_dict[d] = {}
+
+            self.new_weather_dict[d][t] = entry
+
+        # pprint(self.new_weather_dict)
+
+    def run(self):
+        self._fetch_data()
+        self._create_weather_dict()
+
+    def return_the_final_dict(self):
+        return self.new_weather_dict
 
 
-def extract_dates(date_list):
-    formatted_dates = []
-    for date_str in date_list:
-        date_of_month = re.search(r'\d+', date_str).group()
-        month = re.search(r'(?!\s)\w+$', date_str).group()
-        day_of_week = re.search(r'[а-я]+(?=,\s\d)|[а-я]+(?=\d+)', date_str).group()
-        formatted_date_str = date_of_month + ' ' + month + ', ' + day_of_week
-        formatted_dates.append(formatted_date_str)
-    return formatted_dates
-
-
-response = requests.get('https://pogoda.ngs.ru/?from=pogoda')
-
-if response.status_code == 200:
-    text_of_response = response.text
-    html_doc = BeautifulSoup(text_of_response, features='html.parser')
-
-    raw_days_dates = []
-    tags_of_stand_days_dates = html_doc.find('div', {'class': 'pgd-short-cards pgd-short-cards_3-cards'}
-                                             ).find_all('span', {'class': 'pgd-short-card__date-title'})
-    raw_days_dates.extend(tags_to_list(tags=tags_of_stand_days_dates))
-    tags_of_extra_days_dates = html_doc.find('section', {'class': 'content-section-longrange_forecast'}
-                                             ).find_all('td', {'class': 'elements__section-day'})
-    raw_days_dates.extend(tags_to_list(tags=tags_of_extra_days_dates))
-    f_raw_days_dates = extract_dates(date_list=raw_days_dates)
-    all_days_dates = []
-    all_days_weekdays = []
-    for date in f_raw_days_dates:
-        date, weekday = date.split(', ')
-        all_days_dates.extend([date, date, date, date])
-        all_days_weekdays.extend([weekday, weekday, weekday, weekday])
-
-    all_days_times = []
-    tags_of_stand_days_times = html_doc.find_all('span', {'class': 'pgd-short-card__content-day-period'})
-    all_days_times.extend(tags_to_list(tags=tags_of_stand_days_times))
-    tags_of_extra_days_times = html_doc.find('table', {'data-weather-cards-count': '10forecast'}
-                                             ).find_all('td', {'class': 'elements__section-daytime'})
-    for tags in tags_of_extra_days_times:
-        tags_of_one_extra_day_times = tags.find_all('div', {'class': 'elements__section__item'})
-        all_days_times.extend(tags_to_list(tags=tags_of_one_extra_day_times))
-    pprint(all_days_times)
-
-    all_days_contents = []
-    tags_of_stand_days_content = html_doc.find('div', {'class': 'pgd-short-cards pgd-short-cards_3-cards'}
-                                               ).find_all('span', {'class': 'pgd-short-card__content-weather'})
-    all_days_contents.extend(tags_to_list(tags=tags_of_stand_days_content))
-    tags_of_extra_days_contents = html_doc.find('section', {'class': 'content-section-longrange_forecast'}
-                                                ).find_all('td', {'class': 'elements__section-temperature'})
-    for tags in tags_of_extra_days_contents:
-        tags_of_one_extra_day_content = tags.find_all('div', {'class': 'elements__section__view-short'})
-        all_days_contents.extend(tags_to_list(tags=tags_of_one_extra_day_content))
-
-    all_days_weather = []
-    tags_of_stand_days_weather = html_doc.find('div', {'class': 'pgd-short-cards pgd-short-cards_3-cards'}
-                                               ).find_all('i', {'class': 'icon-weather'})
-    all_days_weather.extend(tags_to_list(tags=tags_of_stand_days_weather))
-    tags_of_extra_days_weather = html_doc.find('section', {'class': 'content-section-longrange_forecast'}
-                                               ).find_all('td', {'class': 'elements__section-weather'})
-    for tags in tags_of_extra_days_weather:
-        tags_of_one_extra_day_weather = tags.find_all('i', {'class': 'icon-weather'})
-        all_days_weather.extend(tags_to_list(tags=tags_of_one_extra_day_weather))
-
-    #TODO Проверку удалить:
-    print('Ввод дополнительного значения для проверки перезаписи')
-    all_days_dates.extend(['26 сентября'])
-    all_days_weekdays.extend(['ХХХХХХХХХХХХХХХХХХХХХ'])
-    all_days_times.extend(['вечер'])
-    all_days_contents.extend(['ХХХХХХХХХХХХХХХХХХХХХ'])
-    all_days_weather.extend(['ХХХХХХХХХХХХХХХХХХХХХ'])
-
-    new_weather_dict = {}
-    for d, wd, t, c, w in zip(all_days_dates, all_days_weekdays, all_days_times, all_days_contents, all_days_weather):
-        # print(f'{d:>13}, {wd:12} - {t:6} {c} - {w}')
-        entry = {
-            'weekday': wd,
-            'content': c,
-            'weather': w
-        }
-        if d not in new_weather_dict:
-            new_weather_dict[d] = {}
-
-        new_weather_dict[d][t] = entry
-    pprint(new_weather_dict)
+if __name__ == "__main__":
+    url = 'https://pogoda.ngs.ru/?from=pogoda'
+    get_weather = WeatherScraper(url)
+    get_weather.run()
+    pprint(get_weather.return_the_final_dict())
 
