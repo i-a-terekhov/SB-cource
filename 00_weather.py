@@ -53,6 +53,7 @@ from bs4 import BeautifulSoup
 from pprint import pprint
 import re
 import cv2
+import numpy as np
 
 
 class WeatherScraper:
@@ -187,17 +188,30 @@ class ImageMaker:
 
     def __init__(self):
         self.form = 'python_snippets/external_data/probe.jpg'
+        self.form = 'python_snippets/external_data/girl.jpg'
+
 
     def viewImage(self, image, name_of_window):
-        cv2.namedWindow(name_of_window, cv2.WINDOW_NORMAL)
+        cv2.namedWindow(name_of_window, cv2.WINDOW_NORMAL)  # 800 * 600 по умолчанию
         cv2.imshow(name_of_window, image)
+        size = cv2.getWindowImageRect(name_of_window)
+        print(size)
+        cv2.resizeWindow(name_of_window, size[2], size[3])
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
     def run(self):
         image_cv2 = cv2.imread(self.form)
-        cropped = image_cv2[20:25, 10:15]
+        height, width, _ = image_cv2.shape
+        cropped = image_cv2[0:height, 0:width]
+
+        height, width, _ = image_cv2.shape
+        black_image_cv2 = np.zeros((height, width, 3), dtype=np.uint8)
+        black_image_cv2[:] = (0, 0, 0)
+        cv2.imwrite('black_image.jpg', black_image_cv2)
+
         self.viewImage(cropped, 'Cropped version')
+        self.viewImage(black_image_cv2, 'black_image')
 
 
 if __name__ == "__main__":
