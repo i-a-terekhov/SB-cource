@@ -188,28 +188,35 @@ class ImageMaker:
 
     def __init__(self):
         # self.form = 'python_snippets/external_data/probe.jpg'
-        self.form = 'python_snippets/external_data/girl.jpg'  # Задаем путь к изображению
+        self.form = 'python_snippets/external_data/girl.jpg'  # Временная картинка для отработки масштабирования
+        # self.form = 'python_snippets/external_data/photos/1skillbox.png'  # Картинка много меньше max window sizes
 
-    def viewImage(self, image, name_of_window):
-        cv2.namedWindow(name_of_window, cv2.WINDOW_NORMAL)  # Создаем окно для отображения изображения с размерами 800x600 пикселей
-        cv2.imshow(name_of_window, image)  # Отображаем изображение в окне
-        size = cv2.getWindowImageRect(name_of_window)  # Получаем размер окна
-        print(size)
-        cv2.resizeWindow(name_of_window, size[2], size[3])  # Изменяем размер окна на основе полученных размеров
-        cv2.waitKey(0)  # Ожидаем нажатия клавиши
-        cv2.destroyAllWindows()  # Закрываем все окна
+    def view_image(self, image, name_of_window):
+        max_window_width = 800
+        max_window_height = 600
+
+        window_height, window_width = max_window_height, max_window_width
+
+        image_height, image_width = image.shape[:2]
+        crop_factor_height = image_height / max_window_height
+        crop_factor_width = image_width / max_window_width
+
+        if 1 < crop_factor_width > crop_factor_height:
+            window_height = int(image_height / crop_factor_width)
+        elif 1 < crop_factor_height > crop_factor_width:
+            window_width = int(image_width / crop_factor_height)
+        else:
+            window_width, window_height = image_width, image_height
+
+        cv2.namedWindow(name_of_window, cv2.WINDOW_NORMAL)
+        cv2.resizeWindow(name_of_window, window_width, window_height)
+        cv2.imshow(name_of_window, image)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
 
     def run(self):
-        image_cv2 = cv2.imread(self.form)  # Загружаем изображение
-        height, width, _ = image_cv2.shape  # Получаем высоту, ширину и число каналов изображения
-        cropped = image_cv2[0:height, 0:width]  # Вырезаем весь исходный кадр (то же самое, что и исходное изображение)
-
-        black_image_cv2 = np.zeros((height, width, 3), dtype=np.uint8)  # Создаем черное изображение того же размера, что и исходное изображение
-        black_image_cv2[:] = (0, 0, 0)  # Заполняем черное изображение черным цветом
-        cv2.imwrite('black_image.jpg', black_image_cv2)  # Сохраняем черное изображение в файл 'black_image.jpg'
-
-        self.viewImage(cropped, 'Cropped version')  # Отображаем вырезанное изображение
-        self.viewImage(black_image_cv2, 'black_image')  # Отображаем черное изображение
+        image_cv2 = cv2.imread(self.form)
+        self.view_image(image_cv2, 'Original version')
 
 
 if __name__ == "__main__":
