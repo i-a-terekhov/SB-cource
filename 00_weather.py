@@ -208,6 +208,25 @@ class ImageMaker:
         else:
             window_width, window_height = image_width, image_height
 
+        text = "mg54r"  # длина текста не будет статична в релизе
+
+        font = cv2.FONT_HERSHEY_DUPLEX
+        font_color = (0, 255, 0)
+        start_font_scale = 20
+        start_font_thickness = start_font_scale // 2
+
+        max_text_width = int(0.8 * image_width)
+        (start_text_width, _), _ = cv2.getTextSize(text, font, start_font_scale, start_font_thickness)
+        font_scale = int(start_font_scale * (max_text_width / start_text_width))
+        if font_scale == 0:
+            font_scale = 1
+        font_thickness = int(font_scale // 2)
+
+        (text_width, text_height), _ = cv2.getTextSize(text, font, font_scale, font_thickness)
+        position = (int((image_width - text_width) / 2), int((image_height + text_height) / 2))
+
+        cv2.putText(image, text, position, font, font_scale, font_color, font_thickness)
+
         cv2.namedWindow(name_of_window, cv2.WINDOW_NORMAL)
         cv2.resizeWindow(name_of_window, window_width, window_height)
         cv2.imshow(name_of_window, image)
