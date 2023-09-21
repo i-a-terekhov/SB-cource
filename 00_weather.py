@@ -54,6 +54,7 @@ from pprint import pprint
 import re
 import cv2
 import numpy as np
+import json  # для сохранения словаря в файл weather_dict.py
 
 
 class WeatherScraper:
@@ -179,6 +180,9 @@ class WeatherScraper:
     def run(self):
         self._fetch_data()
         self._create_weather_dict()
+        output_file = 'weather_dict.json'
+        with open(output_file, 'w', encoding='utf-8') as file:
+            json.dump(self.new_weather_dict, file, ensure_ascii=False, indent=4)
 
     def return_the_final_dict(self):
         return self.new_weather_dict
@@ -187,8 +191,8 @@ class WeatherScraper:
 class ImageMaker:
 
     def __init__(self):
-        # self.form = 'python_snippets/external_data/probe.jpg'
-        self.form = 'python_snippets/external_data/girl.jpg'  # Временная картинка для отработки масштабирования
+        self.form = 'python_snippets/external_data/probe.jpg'
+        # self.form = 'python_snippets/external_data/girl.jpg'  # Временная картинка для отработки масштабирования
         # self.form = 'python_snippets/external_data/photos/1skillbox.png'  # Картинка много меньше max window sizes
 
     def view_image(self, image, name_of_window):
