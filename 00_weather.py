@@ -212,8 +212,14 @@ class ImageMaker:
         else:
             window_width, window_height = image_width, image_height
 
-        text = "mg54r"  # длина текста не будет статична в релизе
+        with open('weather_dict.json', 'r', encoding='utf-8') as file:
+            weather_data = json.load(file)
+        original_dict = weather_data
+        print(original_dict['21 сентября']['день']['weather'])
 
+        text = original_dict['21 сентября']['день']['weather']  # длина текста не будет статична в релизе
+
+        #TODO Разобраться с отображением кириллистического текста:
         font = cv2.FONT_HERSHEY_DUPLEX
         font_color = (0, 255, 0)
         start_font_scale = 20
