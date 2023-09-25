@@ -219,8 +219,16 @@ class ImageMaker:
 
         text = original_dict['21 сентября']['день']['weather']  # длина текста не будет статична в релизе
 
-        #TODO Разобраться с отображением кириллистического текста:
         font = cv2.FONT_HERSHEY_DUPLEX
+        # print(cv2.FONT_HERSHEY_SIMPLEX, cv2.FONT_HERSHEY_PLAIN, cv2.FONT_HERSHEY_DUPLEX, cv2.FONT_HERSHEY_COMPLEX, cv2.FONT_HERSHEY_TRIPLEX, cv2.FONT_HERSHEY_COMPLEX_SMALL, cv2.FONT_HERSHEY_SCRIPT_SIMPLEX, cv2.FONT_HERSHEY_SCRIPT_COMPLEX, cv2.FONT_ITALIC)
+        print(cv2.getBuildInformation())
+        # TODO следует признать, что сложность решения подстановки кириллистического шрифта в cv2 непропорциональна решаемой задаче
+        # не помог и ChatGPT и поиск в англоязычном гугле. Предлагаемые варианты с рукописным конвектором ttf в xml,
+        # и использование cv2.freetype не имели успеха.
+        # TODO необходимо сделать словарь замен, где состояние погоды на русском будут соответствовать англ. фразам
+        # ft = cv2.freetype.createFreeType2()
+        # ft.loadFontData(fontFileName='pobeda-bold1.ttf',
+        #                 id=0)
         font_color = (0, 255, 0)
         start_font_scale = 20
         start_font_thickness = start_font_scale // 2
@@ -256,7 +264,6 @@ if __name__ == "__main__":
 
     img = ImageMaker()
     img.run()
-
 
 # Добавить класс ImageMaker.
 # Снабдить его методом рисования открытки
