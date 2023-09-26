@@ -160,7 +160,64 @@ class WeatherScraper:
         self.weather_row_data['weather'] = all_days_weather
 
     def _translate_weather_row_data(self, weather_row_data):
+        #TODO Необходим один словарь, для всех переводов, сохраняемый в файле, т.к. заранее нельзя предсказать, какие
+        # фразы будут использованы.
         pass
+
+    def _translate_datas(self, d):
+        month_translate = {
+            'янв': ' of January',
+            'фев': ' of February',
+            'мар': ' of March',
+            'апр': ' of April',
+            'мая': ' of May',
+            'июн': ' of June',
+            'июл': ' of July',
+            'авг': ' of August',
+            'сен': ' of September',
+            'окт': ' of October',
+            'ноя': ' of November',
+            'дек': ' of December',
+
+        }
+        day, month = d.split()
+        month = month_translate[month[:3]]
+        return day + month
+
+    def _translate_weekday(self, wd):
+        weekday_translate = {
+            'понедельник': 'Monday',
+            'вторник': 'Tuesday',
+            'среда': 'Wednesday',
+            'четверг': 'Thursday',
+            'пятница': 'Friday',
+            'суббота': 'Saturday',
+            'воскресенье': 'Sunday',
+        }
+        return weekday_translate[wd]
+
+    def _translate_times(self, t):
+        time_translate = {
+            'утро': 'morning',
+            'день': 'nune',
+            'вечер': 'evening',
+            'ночь': 'night',
+
+        }
+        return time_translate[t]
+
+    def _translate_weather(self, w):
+        weather_translate = {
+            'Ясная погода, без осадков': 'Clear weather, no precipitation',
+            'Небольшая облачность, без осадков': 'Partly cloudy, no precipitation',
+            'Переменная облачность, без осадков': 'Variable cloudiness, no precipitation',
+            'Пасмурно, без осадков': 'Overcast, no precipitation',
+            'Пасмурно, небольшие дожди': 'Overcast, light rain',
+            'Облачно, без осадков': 'Cloudy, no precipitation',
+            'Переменная облачность, небольшие дожди': 'Variable cloudiness, light rain',
+        }
+        w = weather_translate.get(w)
+        return w
 
     def _create_weather_dict(self):
         self._translate_weather_row_data(self.weather_row_data)
@@ -172,6 +229,11 @@ class WeatherScraper:
         weather = self.weather_row_data['weather']
 
         for d, wd, t, c, w in zip(dates, weekdays, times, contents, weather):
+            d = self._translate_datas(d)
+            wd = self._translate_weekday(wd)
+            t = self._translate_times(t)
+            w = self._translate_weather(w)
+
             # print(f'{d:>13}, {wd:12} - {t:6} {c} - {w}')
             entry = {
                 'weekday': wd,
@@ -225,9 +287,9 @@ class ImageMaker:
         with open('weather_dict.json', 'r', encoding='utf-8') as file:
             weather_data = json.load(file)
         original_dict = weather_data
-        print(original_dict['21 сентября']['день']['weather'])
+        print(original_dict['28 of September']['nune']['weather'])
 
-        text = original_dict['21 сентября']['день']['weather']  # длина текста не будет статична в релизе
+        text = original_dict['28 of September']['nune']['weather']
 
         font = cv2.FONT_HERSHEY_DUPLEX
         font_color = (0, 255, 0)
@@ -259,13 +321,13 @@ class ImageMaker:
 
 if __name__ == "__main__":
     url = 'https://pogoda.ngs.ru/?from=pogoda'
-    get_weather = WeatherScraper(url)
-    get_weather.run()
-    pprint(get_weather.return_the_final_dict())
+    # get_weather = WeatherScraper(url)
+    # get_weather.run()
+    # pprint(get_weather.return_the_final_dict())
 
     #TODO img.run() берет значения из словаря, формируемого и обновляемого в get_weather.run()
-    # img = ImageMaker()
-    # img.run()
+    img = ImageMaker()
+    img.run()
 
 # Добавить класс ImageMaker.
 # Снабдить его методом рисования открытки
