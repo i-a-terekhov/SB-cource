@@ -64,6 +64,7 @@ class WeatherScraper:
         self.new_weather_dict = {}
 
     def _fetch_data(self):
+        """Через функции self._extract* переносим сырые данные в self.weather_row_data"""
         response = requests.get(self.url)
         if response.status_code == 200:
             text_of_response = response.text
@@ -75,6 +76,7 @@ class WeatherScraper:
             self._extract_weather(html_doc)
 
     def _tags_to_list(self, tags):
+        """Найденный парсингом текст помещаем в список"""
         list_of_text = []
         for tag in tags:
             received_text = tag.get_text(strip=True)
@@ -85,6 +87,7 @@ class WeatherScraper:
         return list_of_text
 
     def _regular_filter(self, date_list):
+        """Найденный текст с разноформатными датами переводим в унифицированный лист"""
         formatted_dates = []
         for date_str in date_list:
             date_of_month = re.search(r'\d+', date_str).group()
@@ -156,7 +159,12 @@ class WeatherScraper:
 
         self.weather_row_data['weather'] = all_days_weather
 
+    def _translate_weather_row_data(self, weather_row_data):
+        pass
+
     def _create_weather_dict(self):
+        self._translate_weather_row_data(self.weather_row_data)
+
         dates = self.weather_row_data['dates']
         weekdays = self.weather_row_data['weekdays']
         times = self.weather_row_data['times']
@@ -181,6 +189,8 @@ class WeatherScraper:
         self._fetch_data()
         self._create_weather_dict()
         output_file = 'weather_dict.json'
+        #TODO Пока функция перезаписывает json заново. В дальнейшем необходимо сделать выгрузку из json,
+        # обновление словаря новыми данными, и затем запись в json:
         with open(output_file, 'w', encoding='utf-8') as file:
             json.dump(self.new_weather_dict, file, ensure_ascii=False, indent=4)
 
@@ -220,15 +230,6 @@ class ImageMaker:
         text = original_dict['21 сентября']['день']['weather']  # длина текста не будет статична в релизе
 
         font = cv2.FONT_HERSHEY_DUPLEX
-        # print(cv2.FONT_HERSHEY_SIMPLEX, cv2.FONT_HERSHEY_PLAIN, cv2.FONT_HERSHEY_DUPLEX, cv2.FONT_HERSHEY_COMPLEX, cv2.FONT_HERSHEY_TRIPLEX, cv2.FONT_HERSHEY_COMPLEX_SMALL, cv2.FONT_HERSHEY_SCRIPT_SIMPLEX, cv2.FONT_HERSHEY_SCRIPT_COMPLEX, cv2.FONT_ITALIC)
-        print(cv2.getBuildInformation())
-        # TODO следует признать, что сложность решения подстановки кириллистического шрифта в cv2 непропорциональна решаемой задаче
-        # не помог и ChatGPT и поиск в англоязычном гугле. Предлагаемые варианты с рукописным конвектором ttf в xml,
-        # и использование cv2.freetype не имели успеха.
-        # TODO необходимо сделать словарь замен, где состояние погоды на русском будут соответствовать англ. фразам
-        # ft = cv2.freetype.createFreeType2()
-        # ft.loadFontData(fontFileName='pobeda-bold1.ttf',
-        #                 id=0)
         font_color = (0, 255, 0)
         start_font_scale = 20
         start_font_thickness = start_font_scale // 2
@@ -258,12 +259,13 @@ class ImageMaker:
 
 if __name__ == "__main__":
     url = 'https://pogoda.ngs.ru/?from=pogoda'
-    # get_weather = WeatherScraper(url)
-    # get_weather.run()
-    # pprint(get_weather.return_the_final_dict())
+    get_weather = WeatherScraper(url)
+    get_weather.run()
+    pprint(get_weather.return_the_final_dict())
 
-    img = ImageMaker()
-    img.run()
+    #TODO img.run() берет значения из словаря, формируемого и обновляемого в get_weather.run()
+    # img = ImageMaker()
+    # img.run()
 
 # Добавить класс ImageMaker.
 # Снабдить его методом рисования открытки
