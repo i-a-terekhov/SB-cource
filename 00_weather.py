@@ -55,6 +55,7 @@ import re
 import cv2
 import numpy as np
 import json  # для сохранения словаря в файл weather_dict.py
+from datetime import datetime, timedelta
 
 
 class WeatherScraper:
@@ -62,6 +63,7 @@ class WeatherScraper:
         self.url = url
         self.weather_row_data = {}
         self.new_weather_dict = {}
+        self.database_name = 'weather_dict.json'
 
     def _fetch_data(self):
         """Через функции self._extract* переносим сырые данные в self.weather_row_data"""
@@ -250,11 +252,14 @@ class WeatherScraper:
     def run(self):
         self._fetch_data()
         self._create_weather_dict()
-        output_file = 'weather_dict.json'
-        #TODO Пока функция перезаписывает json заново. В дальнейшем необходимо сделать выгрузку из json,
-        # обновление словаря новыми данными, и затем запись в json:
-        with open(output_file, 'w', encoding='utf-8') as file:
-            json.dump(self.new_weather_dict, file, ensure_ascii=False, indent=4)
+
+        with open(self.database_name, 'r', encoding='utf-8') as file:
+            existing_data = json.load(file)
+
+        existing_data.update(self.new_weather_dict)
+
+        with open(self.database_name, 'w', encoding='utf-8') as file:
+            json.dump(existing_data, file, ensure_ascii=False, indent=4)
 
     def return_the_final_dict(self):
         return self.new_weather_dict
@@ -266,9 +271,37 @@ class ImageMaker:
         self.form = 'python_snippets/external_data/probe.jpg'
         # self.form = 'python_snippets/external_data/girl.jpg'  # Временная картинка для отработки масштабирования
         # self.form = 'python_snippets/external_data/photos/1skillbox.png'  # Картинка много меньше max window sizes
+        with open('weather_dict.json', 'r', encoding='utf-8') as file:
+            self.weather_data = json.load(file)
 
-    #TODO необходима функция выбора дня: передавать в параметрах дату, на которую нужна погода
-    # так же необходимо распечатать карточки на два следующих дня, если они есть
+    def _get_list_of_datas(self):
+        date_list = self.weather_data.keys()
+        today = datetime.now().date()
+        selected_dates = []
+
+        def parse_date(date_str):
+            parts = date_str.split(' of ')
+            day = int(parts[0])
+            month = datetime.strptime(parts[1], '%B').month
+            return datetime(today.year, month, day).date()
+
+        for date_str in date_list:
+            date = parse_date(date_str)
+            if date >= today:
+                selected_dates.append(date_str)
+            if len(selected_dates) >= 3:
+                break
+
+        if len(selected_dates) < 3:
+            date_list.reverse()
+            for date_str in date_list:
+                date = parse_date(date_str)
+                if date < today:
+                    selected_dates.append(date_str)
+                if len(selected_dates) >= 3:
+                    break
+        print(selected_dates)
+        return selected_dates
 
     def _get_window_sizes(self, image_height, image_width):
         max_window_width = 800
@@ -317,23 +350,18 @@ class ImageMaker:
         image_height, image_width = image.shape[:2]
         window_height, window_width = self._get_window_sizes(image_height, image_width)
 
-        #TODO Возможно, получение словаря искомой даты необходимо выделить в отдельную функцию:
-        with open('weather_dict.json', 'r', encoding='utf-8') as file:
-            weather_data = json.load(file)
-        original_dict = weather_data
-
         # text_data будет не масштабируем - выходит за рамки задачи:
         text_data = data
         position = (20, 65)
         self._print_non_scale_text(image, text_data, position, 1)
 
         # text_content будет не масштабируем - выходит за рамки задачи:
-        text_content = original_dict[data]['nune']['content']
+        text_content = self.weather_data[data]['nune']['content']
         position = (300, 85)
         self._print_non_scale_text(image, text_content, position, 3)
 
         # text_weather масштабируем - в рамках доп. задания:
-        text_weather = original_dict[data]['nune']['weather']
+        text_weather = self.weather_data[data]['nune']['weather']
         self._print_scale_text(image, text_weather, image_height, image_width)
 
         cv2.namedWindow(name_of_window, cv2.WINDOW_NORMAL)
@@ -343,17 +371,18 @@ class ImageMaker:
         cv2.destroyAllWindows()
 
     def run(self):
-        image_cv2 = cv2.imread(self.form)
-        self.view_image(image_cv2, name_of_window='Original version', data='28 of September')
+        datas = self._get_list_of_datas()
+        for data in datas:
+            image_cv2 = cv2.imread(self.form)
+            print(data, ';', self.weather_data[data]['nune']['content'], ';', self.weather_data[data]['nune']['weather'])
+            self.view_image(image_cv2, name_of_window='Original version', data=data)
 
 
 if __name__ == "__main__":
     url = 'https://pogoda.ngs.ru/?from=pogoda'
-    # get_weather = WeatherScraper(url)
-    # get_weather.run()
-    # pprint(get_weather.return_the_final_dict())
+    get_weather = WeatherScraper(url)
+    get_weather.run()
 
-    #TODO img.run() берет значения из словаря, формируемого и обновляемого в get_weather.run()
     img = ImageMaker()
     img.run()
 
