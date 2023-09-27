@@ -287,33 +287,54 @@ class ImageMaker:
             window_width, window_height = image_width, image_height
         return window_height, window_width
 
-    def view_image(self, image, name_of_window, data):
-        image_height, image_width = image.shape[:2]
-        window_height, window_width = self._get_window_sizes(image_height, image_width)
+    def _print_non_scale_text(self, image, text, position, scale):
+        font = cv2.FONT_HERSHEY_DUPLEX
+        font_color = (0, 255, 0)
+        font_scale = scale
+        font_thickness = 1
+        cv2.putText(image, text, position, font, font_scale, font_color, font_thickness)
 
+    def _print_scale_text(self, image, text_weather, image_height, image_width):
         font = cv2.FONT_HERSHEY_DUPLEX
         font_color = (0, 255, 0)
         start_font_scale = 20
         start_font_thickness = start_font_scale // 2
-
-        with open('weather_dict.json', 'r', encoding='utf-8') as file:
-            weather_data = json.load(file)
-        original_dict = weather_data
-        text = original_dict[data]['nune']['weather']
-
         max_text_width = int(0.8 * image_width)
+
         # Получение ширины текста при стартовых размере и толщине шрифта:
-        (start_text_width, _), _ = cv2.getTextSize(text, font, start_font_scale, start_font_thickness)
+        (start_text_width, _), _ = cv2.getTextSize(text_weather, font, start_font_scale, start_font_thickness)
         font_scale = int(start_font_scale * (max_text_width / start_text_width))
         if font_scale == 0:
             font_scale = 1
         font_thickness = int(font_scale // 2)
 
         # Вычисление ширины и высоты текста при итоговых размере и толщине шрифта для определения начальной точки
-        (text_width, text_height), _ = cv2.getTextSize(text, font, font_scale, font_thickness)
+        (text_width, text_height), _ = cv2.getTextSize(text_weather, font, font_scale, font_thickness)
         position = (int((image_width - text_width) / 2), int((image_height + text_height) / 2))
+        cv2.putText(image, text_weather, position, font, font_scale, font_color, font_thickness)
 
-        cv2.putText(image, text, position, font, font_scale, font_color, font_thickness)
+    def view_image(self, image, name_of_window, data):
+        image_height, image_width = image.shape[:2]
+        window_height, window_width = self._get_window_sizes(image_height, image_width)
+
+        #TODO Возможно, получение словаря искомой даты необходимо выделить в отдельную функцию:
+        with open('weather_dict.json', 'r', encoding='utf-8') as file:
+            weather_data = json.load(file)
+        original_dict = weather_data
+
+        # text_data будет не масштабируем - выходит за рамки задачи:
+        text_data = data
+        position = (20, 65)
+        self._print_non_scale_text(image, text_data, position, 1)
+
+        # text_content будет не масштабируем - выходит за рамки задачи:
+        text_content = original_dict[data]['nune']['content']
+        position = (300, 85)
+        self._print_non_scale_text(image, text_content, position, 3)
+
+        # text_weather масштабируем - в рамках доп. задания:
+        text_weather = original_dict[data]['nune']['weather']
+        self._print_scale_text(image, text_weather, image_height, image_width)
 
         cv2.namedWindow(name_of_window, cv2.WINDOW_NORMAL)
         cv2.resizeWindow(name_of_window, window_width, window_height)
