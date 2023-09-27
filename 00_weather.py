@@ -267,13 +267,15 @@ class ImageMaker:
         # self.form = 'python_snippets/external_data/girl.jpg'  # Временная картинка для отработки масштабирования
         # self.form = 'python_snippets/external_data/photos/1skillbox.png'  # Картинка много меньше max window sizes
 
-    def view_image(self, image, name_of_window):
+    #TODO необходима функция выбора дня: передавать в параметрах дату, на которую нужна погода
+    # так же необходимо распечатать карточки на два следующих дня, если они есть
+
+    def _get_window_sizes(self, image_height, image_width):
         max_window_width = 800
         max_window_height = 600
 
         window_height, window_width = max_window_height, max_window_width
 
-        image_height, image_width = image.shape[:2]
         crop_factor_height = image_height / max_window_height
         crop_factor_width = image_width / max_window_width
 
@@ -283,26 +285,31 @@ class ImageMaker:
             window_width = int(image_width / crop_factor_height)
         else:
             window_width, window_height = image_width, image_height
+        return window_height, window_width
 
-        with open('weather_dict.json', 'r', encoding='utf-8') as file:
-            weather_data = json.load(file)
-        original_dict = weather_data
-        print(original_dict['28 of September']['nune']['weather'])
-
-        text = original_dict['28 of September']['nune']['weather']
+    def view_image(self, image, name_of_window, data):
+        image_height, image_width = image.shape[:2]
+        window_height, window_width = self._get_window_sizes(image_height, image_width)
 
         font = cv2.FONT_HERSHEY_DUPLEX
         font_color = (0, 255, 0)
         start_font_scale = 20
         start_font_thickness = start_font_scale // 2
 
+        with open('weather_dict.json', 'r', encoding='utf-8') as file:
+            weather_data = json.load(file)
+        original_dict = weather_data
+        text = original_dict[data]['nune']['weather']
+
         max_text_width = int(0.8 * image_width)
+        # Получение ширины текста при стартовых размере и толщине шрифта:
         (start_text_width, _), _ = cv2.getTextSize(text, font, start_font_scale, start_font_thickness)
         font_scale = int(start_font_scale * (max_text_width / start_text_width))
         if font_scale == 0:
             font_scale = 1
         font_thickness = int(font_scale // 2)
 
+        # Вычисление ширины и высоты текста при итоговых размере и толщине шрифта для определения начальной точки
         (text_width, text_height), _ = cv2.getTextSize(text, font, font_scale, font_thickness)
         position = (int((image_width - text_width) / 2), int((image_height + text_height) / 2))
 
@@ -316,7 +323,7 @@ class ImageMaker:
 
     def run(self):
         image_cv2 = cv2.imread(self.form)
-        self.view_image(image_cv2, 'Original version')
+        self.view_image(image_cv2, name_of_window='Original version', data='28 of September')
 
 
 if __name__ == "__main__":
