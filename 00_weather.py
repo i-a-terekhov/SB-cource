@@ -50,22 +50,22 @@
 
 import requests
 from bs4 import BeautifulSoup
-from pprint import pprint
 import re
 import cv2
 import numpy as np
 import json
 from datetime import datetime
+import pprint
 
 
 class WeatherScraper:
-    def __init__(self, url):
-        self.url = url
+    def __init__(self):
+        self.url = 'https://pogoda.ngs.ru/?from=pogoda'
         self.weather_row_data = {}
         self.new_weather_dict = {}
-        self.database_name = 'weather_dict.json'
+        self.database_name = 'weather_dict.json'  #TODO к удалению
 
-    def _fetch_data(self):
+    def fetch_data(self):
         """Через функции self._extract* переносим сырые данные в self.weather_row_data"""
         response = requests.get(self.url)
         if response.status_code == 200:
@@ -161,11 +161,6 @@ class WeatherScraper:
 
         self.weather_row_data['weather'] = all_days_weather
 
-    def _translate_weather_row_data(self, weather_row_data):
-        #TODO Необходим один словарь, для всех переводов, сохраняемый в файле, т.к. заранее нельзя предсказать, какие
-        # фразы будут использованы.
-        pass
-
     def _translate_datas(self, d):
         month_translate = {
             'янв': ' of January',
@@ -222,8 +217,6 @@ class WeatherScraper:
         return w
 
     def _create_weather_dict(self):
-        self._translate_weather_row_data(self.weather_row_data)
-
         dates = self.weather_row_data['dates']
         weekdays = self.weather_row_data['weekdays']
         times = self.weather_row_data['times']
@@ -249,20 +242,38 @@ class WeatherScraper:
 
         # pprint(self.new_weather_dict)
 
-    def run(self):
-        self._fetch_data()
-        self._create_weather_dict()
+    def return_the_final_dict(self):
+        if len(self.new_weather_dict) > 0:
+            self._create_weather_dict()
+            return self.new_weather_dict
+        else:
+            raise Exception('Словарь текущей погоды не сформирован')
 
+#TODO:
+# класс WeatherScraper даунгрейд: экземпляр получает данные и формирует словарь (на 10 актуальных дат с сайта)
+# -
+# Добавить класс DatabaseUpdater с методами:
+#   Сохраняющим прогнозы в базу данных (использовать peewee)
+#   Получающим данные из базы данных за указанный диапазон дат (сравнивает с имеющимися датами - пересечение выдает)
+# -
+# класс ImageMaker даунгрейд: экземпляр получает уже сформированный словарь с выбранными датами
+
+
+class DatabaseUpdater:
+    def __init__(self):
+        self.database_name = 'weather_dict.json'
+
+    def refresh_database(self, new_weather_dict):
         with open(self.database_name, 'r', encoding='utf-8') as file:
             existing_data = json.load(file)
 
-        existing_data.update(self.new_weather_dict)
+        existing_data.update(new_weather_dict)
 
         with open(self.database_name, 'w', encoding='utf-8') as file:
             json.dump(existing_data, file, ensure_ascii=False, indent=4)
 
-    def return_the_final_dict(self):
-        return self.new_weather_dict
+    def get_datas_from_bd(self):
+        pass
 
 
 class ImageMaker:
@@ -439,9 +450,13 @@ class ImageMaker:
 
 
 if __name__ == "__main__":
-    url = 'https://pogoda.ngs.ru/?from=pogoda'
-    # get_weather = WeatherScraper(url)
-    # get_weather.run()
+    get_weather = WeatherScraper()
+    # get_weather.fetch_data()
+    # current_dict_of_weather = get_weather.return_the_final_dict()
+
+    database_refresher = DatabaseUpdater()
+    #TODO удаленные даты при обновлении добавляются в конец json, что приводит к изменению порядка дней
+    # database_refresher.refresh_database(current_dict_of_weather)
 
     img = ImageMaker()
     img.run()
