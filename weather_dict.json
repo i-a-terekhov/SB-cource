@@ -61,24 +61,24 @@
         },
         "evening": {
             "weekday": "Thursday",
-            "content": "+9",
-            "weather": "Overcast, no precipitation"
+            "content": "+8",
+            "weather": "Overcast, light rain"
         }
     },
     "29 of September": {
         "night": {
             "weekday": "Friday",
             "content": "+7",
-            "weather": "Overcast, no precipitation"
+            "weather": "Overcast, light rain"
         },
         "morning": {
             "weekday": "Friday",
-            "content": "+9",
+            "content": "+8",
             "weather": "Overcast, light rain"
         },
         "nune": {
             "weekday": "Friday",
-            "content": "+12",
+            "content": "+11",
             "weather": "Variable cloudiness, light rain"
         },
         "evening": {
@@ -90,39 +90,39 @@
     "30 of September": {
         "night": {
             "weekday": "Saturday",
-            "content": "+7",
+            "content": "+8",
             "weather": "Cloudy, no precipitation"
         },
         "morning": {
             "weekday": "Saturday",
-            "content": "+10",
+            "content": "+11",
             "weather": "Overcast, light rain"
         },
         "nune": {
             "weekday": "Saturday",
-            "content": "+11",
+            "content": "+12",
             "weather": "Overcast, light rain"
         },
         "evening": {
             "weekday": "Saturday",
-            "content": "+5",
-            "weather": "Variable cloudiness, no precipitation"
+            "content": "+6",
+            "weather": "Overcast, light rain"
         }
     },
     "1 of October": {
         "night": {
             "weekday": "Sunday",
-            "content": "0",
-            "weather": "Partly cloudy, no precipitation"
+            "content": "−1",
+            "weather": "Clear weather, no precipitation"
         },
         "morning": {
             "weekday": "Sunday",
-            "content": "+2",
+            "content": "+1",
             "weather": "Partly cloudy, no precipitation"
         },
         "nune": {
             "weekday": "Sunday",
-            "content": "+7",
+            "content": "+6",
             "weather": "Partly cloudy, no precipitation"
         },
         "evening": {
@@ -135,131 +135,131 @@
         "night": {
             "weekday": "Monday",
             "content": "+1",
-            "weather": "Clear weather, no precipitation"
+            "weather": "Partly cloudy, no precipitation"
         },
         "morning": {
             "weekday": "Monday",
-            "content": "+3",
-            "weather": "Clear weather, no precipitation"
+            "content": "+4",
+            "weather": "Partly cloudy, no precipitation"
         },
         "nune": {
             "weekday": "Monday",
-            "content": "+9",
-            "weather": "Clear weather, no precipitation"
+            "content": "+10",
+            "weather": "Partly cloudy, no precipitation"
         },
         "evening": {
             "weekday": "Monday",
-            "content": "+5",
-            "weather": "Clear weather, no precipitation"
+            "content": "+6",
+            "weather": "Partly cloudy, no precipitation"
         }
     },
     "3 of October": {
         "night": {
             "weekday": "Tuesday",
-            "content": "+2",
-            "weather": "Clear weather, no precipitation"
+            "content": "+3",
+            "weather": "Partly cloudy, no precipitation"
         },
         "morning": {
             "weekday": "Tuesday",
-            "content": "+5",
-            "weather": "Clear weather, no precipitation"
+            "content": "+6",
+            "weather": "Partly cloudy, no precipitation"
         },
         "nune": {
             "weekday": "Tuesday",
-            "content": "+11",
+            "content": "+12",
             "weather": "Clear weather, no precipitation"
         },
         "evening": {
             "weekday": "Tuesday",
-            "content": "+7",
-            "weather": "Variable cloudiness, no precipitation"
+            "content": "+8",
+            "weather": "Clear weather, no precipitation"
         }
     },
     "4 of October": {
         "night": {
             "weekday": "Wednesday",
             "content": "+5",
-            "weather": "Variable cloudiness, no precipitation"
+            "weather": "Clear weather, no precipitation"
         },
         "morning": {
             "weekday": "Wednesday",
-            "content": "+8",
-            "weather": "Overcast, no precipitation"
+            "content": "+7",
+            "weather": "Clear weather, no precipitation"
         },
         "nune": {
             "weekday": "Wednesday",
-            "content": "+12",
-            "weather": "Variable cloudiness, no precipitation"
+            "content": "+13",
+            "weather": "Clear weather, no precipitation"
         },
         "evening": {
             "weekday": "Wednesday",
-            "content": "+8",
-            "weather": "Partly cloudy, no precipitation"
+            "content": "+9",
+            "weather": "Overcast, no precipitation"
         }
     },
     "5 of October": {
         "night": {
             "weekday": "Thursday",
-            "content": "+6",
+            "content": "+7",
             "weather": "Overcast, no precipitation"
         },
         "morning": {
             "weekday": "Thursday",
-            "content": "+8",
-            "weather": "Variable cloudiness, no precipitation"
+            "content": "+9",
+            "weather": "Overcast, light rain"
         },
         "nune": {
             "weekday": "Thursday",
-            "content": "+13",
-            "weather": "Variable cloudiness, no precipitation"
+            "content": "+9",
+            "weather": "Overcast, light rain"
         },
         "evening": {
             "weekday": "Thursday",
-            "content": "+9",
-            "weather": "Partly cloudy, no precipitation"
+            "content": "+8",
+            "weather": "Variable cloudiness, no precipitation"
         }
     },
     "6 of October": {
         "night": {
             "weekday": "Friday",
-            "content": "+5",
+            "content": "+7",
             "weather": "Overcast, no precipitation"
         },
         "morning": {
             "weekday": "Friday",
-            "content": "+8",
+            "content": "+9",
             "weather": "Overcast, no precipitation"
         },
         "nune": {
             "weekday": "Friday",
-            "content": "+15",
-            "weather": "Overcast, no precipitation"
+            "content": "+13",
+            "weather": "Variable cloudiness, no precipitation"
         },
         "evening": {
             "weekday": "Friday",
-            "content": "+11",
+            "content": "+10",
             "weather": "Variable cloudiness, no precipitation"
         }
     },
     "7 of October": {
         "night": {
             "weekday": "Saturday",
-            "content": "+5",
+            "content": "+7",
             "weather": "Overcast, no precipitation"
         },
         "morning": {
             "weekday": "Saturday",
-            "content": "+8",
+            "content": "+9",
             "weather": "Overcast, no precipitation"
         },
         "nune": {
             "weekday": "Saturday",
-            "content": "+15",
-            "weather": "Overcast, no precipitation"
+            "content": "+13",
+            "weather": "Variable cloudiness, no precipitation"
         },
         "evening": {
             "weekday": "Saturday",
-            "content": "+11",
+            "content": "+10",
             "weather": "Variable cloudiness, no precipitation"
         }
     }

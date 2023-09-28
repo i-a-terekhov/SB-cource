@@ -54,9 +54,8 @@ from pprint import pprint
 import re
 import cv2
 import numpy as np
-import json  # для сохранения словаря в файл weather_dict.py
+import json
 from datetime import datetime
-import os
 
 
 class WeatherScraper:
@@ -276,6 +275,7 @@ class ImageMaker:
             self.weather_data = json.load(file)
 
     def _get_list_of_datas(self):
+        max_weather_cards = 5
         date_list = self.weather_data.keys()
         today = datetime.now().date()
         selected_dates = []
@@ -290,18 +290,18 @@ class ImageMaker:
             date = parse_date(date_str)
             if date >= today:
                 selected_dates.append(date_str)
-            if len(selected_dates) >= 3:
+            if len(selected_dates) >= max_weather_cards:
                 break
 
-        if len(selected_dates) < 3:
+        if len(selected_dates) < max_weather_cards:
             date_list.reverse()
             for date_str in date_list:
                 date = parse_date(date_str)
                 if date < today:
                     selected_dates.append(date_str)
-                if len(selected_dates) >= 3:
+                if len(selected_dates) >= max_weather_cards:
                     break
-        print(selected_dates)
+        print(f'Доступен прогноз на следующие дни: {selected_dates}')
         return selected_dates
 
     def _get_window_sizes(self, image_height, image_width):
@@ -359,10 +359,40 @@ class ImageMaker:
             'Variable cloudiness, light rain': 'rain.jpg',
         }
         icon_path = location + weather_icon[self.weather_data[data]['nune']['weather']]
-        print(icon_path)
         return icon_path
 
-    #TODO Необходимо залить фон
+    def _gradient_maker(self, data, image_height, image_width):
+        weather_colors = {
+            'Clear weather, no precipitation': [(255, 255, 0), (255, 255, 255)],  # Желтый к белому
+            'Partly cloudy, no precipitation': [(0, 0, 128), (255, 255, 255)],  # Синий к белому
+            'Variable cloudiness, no precipitation': [(135, 206, 235), (255, 255, 255)],  # Голубой к белому
+            'Overcast, no precipitation': [(169, 169, 169), (255, 255, 255)],  # Серый к белому
+            'Overcast, light rain': [(169, 169, 169), (0, 0, 255)],  # Серый к синему
+            'Cloudy, no precipitation': [(169, 169, 169), (255, 255, 255)],  # Серый к белому
+            'Variable cloudiness, light rain': [(135, 206, 235), (0, 0, 255)],  # Голубой к синему
+        }
+
+        weather = self.weather_data[data]['nune']['weather']
+        start_color = weather_colors[weather][0]
+        end_color = weather_colors[weather][1]
+
+        # создаем холст для градиента
+        # Возможно улучить: проверяем, есть ли подходящий сохраненный градиент. Если нет, создаем и сохраняем:
+        gradient = np.zeros((image_height, image_width, 3), dtype=np.uint8)
+
+        for y in range(image_height):
+            height_deletion = y / image_height
+            inv_height_deletion = 1 - height_deletion
+            # вычисляем значение цвета на текущей строке на основе линейного градиента
+            r = int(start_color[0] * inv_height_deletion + end_color[0] * height_deletion)
+            g = int(start_color[1] * inv_height_deletion + end_color[1] * height_deletion)
+            b = int(start_color[2] * inv_height_deletion + end_color[2] * height_deletion)
+
+            # заполняем строку градиента
+            gradient[y, :, :] = (b, g, r)  # OpenCV использует порядок BGR
+
+        return gradient
+
     def draw_weather_card(self, image, name_of_window, data):
         image_height, image_width = image.shape[:2]
         window_height, window_width = self._get_window_sizes(image_height, image_width)
@@ -381,13 +411,16 @@ class ImageMaker:
         text_weather = self.weather_data[data]['nune']['weather']
         self._print_scale_text(image, text_weather, image_height, image_width)
 
+        # иконку, соответствующую погоде, рисуем на погодной карточке:
         icon = cv2.imread(self._choose_an_icon(data=data))
         icon_height, icon_width = icon.shape[:2]
-        image_height, image_width = image.shape[:2]
-
         x_offset = (image_width - icon_width) // 2
         y_offset = (image_height - icon_height) // 2 + 10
         image[y_offset:(y_offset + icon_height), x_offset:(x_offset + icon_width)] = icon
+
+        # добавляем градиент, соответствующий погоде:
+        gradient = self._gradient_maker(data, image_height, image_width)
+        image = cv2.addWeighted(image, 0.5, gradient, 0.5, 0)
 
         cv2.namedWindow(name_of_window, cv2.WINDOW_NORMAL)
         cv2.resizeWindow(name_of_window, window_width, window_height)
@@ -399,7 +432,9 @@ class ImageMaker:
         datas = self._get_list_of_datas()
         for data in datas:
             image_cv2 = cv2.imread(self.form)
-            print(data, ';', self.weather_data[data]['nune']['content'], ';', self.weather_data[data]['nune']['weather'])
+            content = self.weather_data[data]['nune']['content']
+            weather = self.weather_data[data]['nune']['weather']
+            print(f'{data}: {content}, {weather}')
             self.draw_weather_card(image_cv2, name_of_window='Original version', data=data)
 
 
@@ -411,10 +446,3 @@ if __name__ == "__main__":
     img = ImageMaker()
     img.run()
 
-# Добавить класс ImageMaker.
-# Снабдить его методом рисования открытки
-# (использовать OpenCV, в качестве заготовки брать lesson_016/python_snippets/external_data/probe.jpg):
-#   С текстом, состоящим из полученных данных (пригодится cv2.putText)
-#   С изображением, соответствующим типу погоды
-# (хранятся в lesson_016/python_snippets/external_data/weather_img ,но можно нарисовать/добавить свои)
-#   В качестве фона добавить градиент цвета, отражающего тип погоды
