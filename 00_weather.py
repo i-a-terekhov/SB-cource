@@ -55,7 +55,8 @@ import re
 import cv2
 import numpy as np
 import json  # для сохранения словаря в файл weather_dict.py
-from datetime import datetime, timedelta
+from datetime import datetime
+import os
 
 
 class WeatherScraper:
@@ -343,10 +344,26 @@ class ImageMaker:
 
         # Вычисление ширины и высоты текста при итоговых размере и толщине шрифта для определения начальной точки
         (text_width, text_height), _ = cv2.getTextSize(text_weather, font, font_scale, font_thickness)
-        position = (int((image_width - text_width) / 2), int((image_height + text_height) / 2))
+        position = ((image_width - text_width) // 2, int((1.6 * image_height + text_height) // 2))
         cv2.putText(image, text_weather, position, font, font_scale, font_color, font_thickness)
 
-    def view_image(self, image, name_of_window, data):
+    def _choose_an_icon(self, data):
+        location = 'python_snippets/external_data/weather_img/'
+        weather_icon = {
+            'Clear weather, no precipitation': 'sun.jpg',
+            'Partly cloudy, no precipitation': 'cloud.jpg',
+            'Variable cloudiness, no precipitation': 'cloud.jpg',
+            'Overcast, no precipitation': 'cloud.jpg',
+            'Overcast, light rain': 'rain.jpg',
+            'Cloudy, no precipitation': 'cloud.jpg',
+            'Variable cloudiness, light rain': 'rain.jpg',
+        }
+        icon_path = location + weather_icon[self.weather_data[data]['nune']['weather']]
+        print(icon_path)
+        return icon_path
+
+    #TODO Необходимо залить фон
+    def draw_weather_card(self, image, name_of_window, data):
         image_height, image_width = image.shape[:2]
         window_height, window_width = self._get_window_sizes(image_height, image_width)
 
@@ -364,6 +381,14 @@ class ImageMaker:
         text_weather = self.weather_data[data]['nune']['weather']
         self._print_scale_text(image, text_weather, image_height, image_width)
 
+        icon = cv2.imread(self._choose_an_icon(data=data))
+        icon_height, icon_width = icon.shape[:2]
+        image_height, image_width = image.shape[:2]
+
+        x_offset = (image_width - icon_width) // 2
+        y_offset = (image_height - icon_height) // 2 + 10
+        image[y_offset:(y_offset + icon_height), x_offset:(x_offset + icon_width)] = icon
+
         cv2.namedWindow(name_of_window, cv2.WINDOW_NORMAL)
         cv2.resizeWindow(name_of_window, window_width, window_height)
         cv2.imshow(name_of_window, image)
@@ -375,13 +400,13 @@ class ImageMaker:
         for data in datas:
             image_cv2 = cv2.imread(self.form)
             print(data, ';', self.weather_data[data]['nune']['content'], ';', self.weather_data[data]['nune']['weather'])
-            self.view_image(image_cv2, name_of_window='Original version', data=data)
+            self.draw_weather_card(image_cv2, name_of_window='Original version', data=data)
 
 
 if __name__ == "__main__":
     url = 'https://pogoda.ngs.ru/?from=pogoda'
-    get_weather = WeatherScraper(url)
-    get_weather.run()
+    # get_weather = WeatherScraper(url)
+    # get_weather.run()
 
     img = ImageMaker()
     img.run()
