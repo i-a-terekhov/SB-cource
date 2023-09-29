@@ -250,7 +250,7 @@ class WeatherScraper:
 
 class DatabaseUpdater:
     def __init__(self):
-        self.database_name = 'weather_dict.json'
+        self.database_name = r'C:\Users\Ivan\PyCharm\SkillBox\lesson_016\weather_dict.json'
         self.weather_data = None
 
     def refresh_database(self, new_weather_dict):
@@ -300,9 +300,7 @@ class DatabaseUpdater:
 class ImageMaker:
 
     def __init__(self):
-        self.form = 'python_snippets/external_data/probe.jpg'
-        # self.form = 'python_snippets/external_data/girl.jpg'  # Временная картинка для отработки масштабирования
-        # self.form = 'python_snippets/external_data/photos/1skillbox.png'  # Картинка много меньше max window sizes
+        self.form = r'C:\Users\Ivan\PyCharm\SkillBox\lesson_016\python_snippets\external_data\probe.jpg'
         self.datas = {}
 
     def _get_window_sizes(self, image_height, image_width):
@@ -349,7 +347,7 @@ class ImageMaker:
         cv2.putText(image, text_weather, position, font, font_scale, font_color, font_thickness)
 
     def _choose_an_icon(self, data):
-        location = 'python_snippets/external_data/weather_img/'
+        location = r'C:\Users\Ivan\PyCharm\SkillBox\lesson_016\python_snippets\external_data\weather_img'
         weather_icon = {
             'Clear weather, no precipitation': 'sun.jpg',
             'Partly cloudy, no precipitation': 'cloud.jpg',
@@ -359,7 +357,7 @@ class ImageMaker:
             'Cloudy, no precipitation': 'cloud.jpg',
             'Variable cloudiness, light rain': 'rain.jpg',
         }
-        icon_path = location + weather_icon[self.datas[data]['nune']['weather']]
+        icon_path = location + '\\' + weather_icon[self.datas[data]['nune']['weather']]
         return icon_path
 
     def _gradient_maker(self, data, image_height, image_width):
@@ -453,9 +451,10 @@ if __name__ == "__main__":
     img = ImageMaker()
     img.run(datas)  # по полученному словарю выбранных дат обращаемся отрисовываем содержание
 
-    datas = db_updater.return_data_for_selected_days()
-    img.run(datas)
+    # datas = db_updater.return_data_for_selected_days()
+    # img.run(datas)
 
+# запуск в консоли: C:\Users\Ivan\PyCharm\SkillBox\lesson_016\venv\Scripts\Python.exe C:\Users\Ivan\PyCharm\SkillBox\lesson_016\00_weather.py
 
 #TODO
 # Сделать программу с консольным интерфейсом, постаравшись все выполняемые действия вынести в отдельные функции.
