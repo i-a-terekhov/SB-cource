@@ -55,7 +55,6 @@ import cv2
 import numpy as np
 import json
 from datetime import datetime
-import pprint
 
 
 class WeatherScraper:
@@ -248,10 +247,6 @@ class WeatherScraper:
         else:
             raise Exception('Словарь текущей погоды не сформирован')
 
-#TODO:
-# Добавить класс DatabaseUpdater с методами:
-#   Получающим данные из базы данных за указанный диапазон дат (сравнивает с имеющимися датами - пересечение выдает)
-
 
 class DatabaseUpdater:
     def __init__(self):
@@ -267,43 +262,39 @@ class DatabaseUpdater:
         with open(self.database_name, 'w', encoding='utf-8') as file:
             json.dump(existing_data, file, ensure_ascii=False, indent=4)
 
-    def get_datas_from_bd(self):
+    def _get_datas_from_bd(self):
         with open(self.database_name, 'r', encoding='utf-8') as file:
             self.weather_data = json.load(file)
 
-    def get_list_of_datas(self):
-        self.get_datas_from_bd()
-        max_weather_cards = 5
-        if self.weather_data is not None:
-            date_list = self.weather_data.keys()
-        else:
-            raise Exception('Необходимо подключиться к базе данных')
+    def return_data_for_selected_days(self, days=None):
+        if not self.weather_data:
+            self._get_datas_from_bd()
 
-        def parse_date(date_str):
+        def str_date_to_date(date_str):
             parts = date_str.split(' of ')
             day = int(parts[0])
             month = datetime.strptime(parts[1], '%B').month
             return datetime(today.year, month, day).date()
 
-        today = datetime.now().date()
-        selected_dates = []
-        for date_str in date_list:
-            date = parse_date(date_str)
-            if date >= today:
-                selected_dates.append(date_str)
-            if len(selected_dates) >= max_weather_cards:
-                break
-
-        if len(selected_dates) < max_weather_cards:
-            date_list.reverse()
+        data_for_selected_days = {}
+        date_list = self.weather_data.keys()
+        if days is None:
+            today = datetime.now().date()
+            max_weather_cards = 5
+            selected_dates = 0
             for date_str in date_list:
-                date = parse_date(date_str)
-                if date < today:
-                    selected_dates.append(date_str)
-                if len(selected_dates) >= max_weather_cards:
+                date = str_date_to_date(date_str)
+                if date >= today:
+                    selected_dates += 1
+                    data_for_selected_days[date_str] = self.weather_data[date_str]
+                if selected_dates >= max_weather_cards:
                     break
-        print(f'Доступен прогноз на следующие дни: {selected_dates}')
-        return selected_dates
+        else:
+            for day in days:
+                if day in date_list:
+                    data_for_selected_days[day] = self.weather_data[day]
+        print(f'Доступен прогноз на следующие дни: {list(data_for_selected_days.keys())}')
+        return data_for_selected_days
 
 
 class ImageMaker:
@@ -312,8 +303,7 @@ class ImageMaker:
         self.form = 'python_snippets/external_data/probe.jpg'
         # self.form = 'python_snippets/external_data/girl.jpg'  # Временная картинка для отработки масштабирования
         # self.form = 'python_snippets/external_data/photos/1skillbox.png'  # Картинка много меньше max window sizes
-        with open('weather_dict.json', 'r', encoding='utf-8') as file:
-            self.weather_data = json.load(file)
+        self.datas = {}
 
     def _get_window_sizes(self, image_height, image_width):
         max_window_width = 800
@@ -369,7 +359,7 @@ class ImageMaker:
             'Cloudy, no precipitation': 'cloud.jpg',
             'Variable cloudiness, light rain': 'rain.jpg',
         }
-        icon_path = location + weather_icon[self.weather_data[data]['nune']['weather']]
+        icon_path = location + weather_icon[self.datas[data]['nune']['weather']]
         return icon_path
 
     def _gradient_maker(self, data, image_height, image_width):
@@ -383,7 +373,7 @@ class ImageMaker:
             'Variable cloudiness, light rain': [(135, 206, 235), (0, 0, 255)],  # Голубой к синему
         }
 
-        weather = self.weather_data[data]['nune']['weather']
+        weather = self.datas[data]['nune']['weather']
         start_color = weather_colors[weather][0]
         end_color = weather_colors[weather][1]
 
@@ -414,12 +404,12 @@ class ImageMaker:
         self._print_non_scale_text(image, text_data, position, 1)
 
         # text_content будет не масштабируем - выходит за рамки задачи:
-        text_content = self.weather_data[data]['nune']['content']
+        text_content = self.datas[data]['nune']['content']
         position = (300, 85)
         self._print_non_scale_text(image, text_content, position, 3)
 
         # text_weather масштабируем - в рамках доп. задания:
-        text_weather = self.weather_data[data]['nune']['weather']
+        text_weather = self.datas[data]['nune']['weather']
         self._print_scale_text(image, text_weather, image_height, image_width)
 
         # иконку, соответствующую погоде, рисуем на погодной карточке:
@@ -440,23 +430,37 @@ class ImageMaker:
         cv2.destroyAllWindows()
 
     def run(self, datas):
+        self.datas = datas
         for data in datas:
             image_cv2 = cv2.imread(self.form)
-            content = self.weather_data[data]['nune']['content']
-            weather = self.weather_data[data]['nune']['weather']
+            content = self.datas[data]['nune']['content']
+            weather = self.datas[data]['nune']['weather']
             print(f'{data}: {content}, {weather}')
             self.draw_weather_card(image_cv2, name_of_window='Original version', data=data)
 
 
 if __name__ == "__main__":
-    get_weather = WeatherScraper()
+    # get_weather = WeatherScraper()
     # get_weather.fetch_data()  # получаем данные с сайта
     # current_dict_of_weather = get_weather.return_the_final_dict()  # получаем чистовой словарь для передачи в БД
 
     db_updater = DatabaseUpdater()
     # db_updater.refresh_database(current_dict_of_weather)  # передаем словарь в обновитель базы данных
-    datas = db_updater.get_list_of_datas()  # получаем лист_по_умолчанию на пять дат
+
+    # получаем словарь с данными для выбранных дат из БД, для дальнейшей передачи в ImageMaker:
+    datas = db_updater.return_data_for_selected_days(days=['25 of September', '27 of September', '1 of October', '2 of October', '3 of October'])
 
     img = ImageMaker()
-    img.run(datas)  # по полученному списку дат обращаемся к БД и отрисовываем содержание
+    img.run(datas)  # по полученному словарю выбранных дат обращаемся отрисовываем содержание
 
+    datas = db_updater.return_data_for_selected_days()
+    img.run(datas)
+
+
+#TODO
+# Сделать программу с консольным интерфейсом, постаравшись все выполняемые действия вынести в отдельные функции.
+# Среди действий, доступных пользователю должны быть:
+#   Добавление прогнозов за диапазон дат в базу данных
+#   Получение прогнозов за диапазон дат из базы
+#   Выведение полученных прогнозов на консоль
+# При старте консольная утилита должна загружать прогнозы за прошедшую неделю.
