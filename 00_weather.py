@@ -437,6 +437,37 @@ class ImageMaker:
             self.draw_weather_card(image_cv2, name_of_window='Original version', data=data)
 
 
+class ConsoleInterface:
+    def __init__(self):
+        pass
+
+    def _five_days(self):
+        datas_getter = DatabaseUpdater()
+        datas_for_five_days = datas_getter.return_data_for_selected_days()
+        weather_cards = ImageMaker()
+        weather_cards.run(datas_for_five_days)
+
+    def main(self):
+        print('Приветствуем тебя, юзернейм! Это программа парсинга погоды!')
+
+        options = {
+            '1': ['Рапечатать прогноз на 5 дней', self._five_days],
+            '2': ['В разработке', print],
+            '3': ['В разработке 2', print]
+        }
+        while True:
+            print('Выберете действие:')
+            for num in options:
+                print(f'{num}: {options[num][0]}')
+            user_input = input("Введите номер действия ")
+
+            if user_input in options.keys():
+                print(f'Вы выбрали функцию {options[user_input][1]}')
+                options[user_input][1]()
+                break
+            else:
+                print("Неверный ввод")
+
 if __name__ == "__main__":
     # get_weather = WeatherScraper()
     # get_weather.fetch_data()  # получаем данные с сайта
@@ -446,13 +477,16 @@ if __name__ == "__main__":
     # db_updater.refresh_database(current_dict_of_weather)  # передаем словарь в обновитель базы данных
 
     # получаем словарь с данными для выбранных дат из БД, для дальнейшей передачи в ImageMaker:
-    datas = db_updater.return_data_for_selected_days(days=['25 of September', '27 of September', '1 of October', '2 of October', '3 of October'])
+    datas = db_updater.return_data_for_selected_days(days=['25 of September', '27 of September'])
 
     img = ImageMaker()
     img.run(datas)  # по полученному словарю выбранных дат обращаемся отрисовываем содержание
 
     # datas = db_updater.return_data_for_selected_days()
     # img.run(datas)
+
+    dialog = ConsoleInterface()
+    dialog.main()
 
 # запуск в консоли: C:\Users\Ivan\PyCharm\SkillBox\lesson_016\venv\Scripts\Python.exe C:\Users\Ivan\PyCharm\SkillBox\lesson_016\00_weather.py
 
