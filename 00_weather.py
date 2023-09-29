@@ -63,7 +63,6 @@ class WeatherScraper:
         self.url = 'https://pogoda.ngs.ru/?from=pogoda'
         self.weather_row_data = {}
         self.new_weather_dict = {}
-        self.database_name = 'weather_dict.json'  #TODO к удалению
 
     def fetch_data(self):
         """Через функции self._extract* переносим сырые данные в self.weather_row_data"""
@@ -243,25 +242,21 @@ class WeatherScraper:
         # pprint(self.new_weather_dict)
 
     def return_the_final_dict(self):
-        if len(self.new_weather_dict) > 0:
+        if len(self.weather_row_data) > 0:
             self._create_weather_dict()
             return self.new_weather_dict
         else:
             raise Exception('Словарь текущей погоды не сформирован')
 
 #TODO:
-# класс WeatherScraper даунгрейд: экземпляр получает данные и формирует словарь (на 10 актуальных дат с сайта)
-# -
 # Добавить класс DatabaseUpdater с методами:
-#   Сохраняющим прогнозы в базу данных (использовать peewee)
 #   Получающим данные из базы данных за указанный диапазон дат (сравнивает с имеющимися датами - пересечение выдает)
-# -
-# класс ImageMaker даунгрейд: экземпляр получает уже сформированный словарь с выбранными датами
 
 
 class DatabaseUpdater:
     def __init__(self):
         self.database_name = 'weather_dict.json'
+        self.weather_data = None
 
     def refresh_database(self, new_weather_dict):
         with open(self.database_name, 'r', encoding='utf-8') as file:
@@ -273,23 +268,16 @@ class DatabaseUpdater:
             json.dump(existing_data, file, ensure_ascii=False, indent=4)
 
     def get_datas_from_bd(self):
-        pass
-
-
-class ImageMaker:
-
-    def __init__(self):
-        self.form = 'python_snippets/external_data/probe.jpg'
-        # self.form = 'python_snippets/external_data/girl.jpg'  # Временная картинка для отработки масштабирования
-        # self.form = 'python_snippets/external_data/photos/1skillbox.png'  # Картинка много меньше max window sizes
-        with open('weather_dict.json', 'r', encoding='utf-8') as file:
+        with open(self.database_name, 'r', encoding='utf-8') as file:
             self.weather_data = json.load(file)
 
-    def _get_list_of_datas(self):
+    def get_list_of_datas(self):
+        self.get_datas_from_bd()
         max_weather_cards = 5
-        date_list = self.weather_data.keys()
-        today = datetime.now().date()
-        selected_dates = []
+        if self.weather_data is not None:
+            date_list = self.weather_data.keys()
+        else:
+            raise Exception('Необходимо подключиться к базе данных')
 
         def parse_date(date_str):
             parts = date_str.split(' of ')
@@ -297,6 +285,8 @@ class ImageMaker:
             month = datetime.strptime(parts[1], '%B').month
             return datetime(today.year, month, day).date()
 
+        today = datetime.now().date()
+        selected_dates = []
         for date_str in date_list:
             date = parse_date(date_str)
             if date >= today:
@@ -314,6 +304,16 @@ class ImageMaker:
                     break
         print(f'Доступен прогноз на следующие дни: {selected_dates}')
         return selected_dates
+
+
+class ImageMaker:
+
+    def __init__(self):
+        self.form = 'python_snippets/external_data/probe.jpg'
+        # self.form = 'python_snippets/external_data/girl.jpg'  # Временная картинка для отработки масштабирования
+        # self.form = 'python_snippets/external_data/photos/1skillbox.png'  # Картинка много меньше max window sizes
+        with open('weather_dict.json', 'r', encoding='utf-8') as file:
+            self.weather_data = json.load(file)
 
     def _get_window_sizes(self, image_height, image_width):
         max_window_width = 800
@@ -439,8 +439,7 @@ class ImageMaker:
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
-    def run(self):
-        datas = self._get_list_of_datas()
+    def run(self, datas):
         for data in datas:
             image_cv2 = cv2.imread(self.form)
             content = self.weather_data[data]['nune']['content']
@@ -451,13 +450,13 @@ class ImageMaker:
 
 if __name__ == "__main__":
     get_weather = WeatherScraper()
-    # get_weather.fetch_data()
-    # current_dict_of_weather = get_weather.return_the_final_dict()
+    # get_weather.fetch_data()  # получаем данные с сайта
+    # current_dict_of_weather = get_weather.return_the_final_dict()  # получаем чистовой словарь для передачи в БД
 
-    database_refresher = DatabaseUpdater()
-    #TODO удаленные даты при обновлении добавляются в конец json, что приводит к изменению порядка дней
-    # database_refresher.refresh_database(current_dict_of_weather)
+    db_updater = DatabaseUpdater()
+    # db_updater.refresh_database(current_dict_of_weather)  # передаем словарь в обновитель базы данных
+    datas = db_updater.get_list_of_datas()  # получаем лист_по_умолчанию на пять дат
 
     img = ImageMaker()
-    img.run()
+    img.run(datas)  # по полученному списку дат обращаемся к БД и отрисовываем содержание
 
