@@ -464,7 +464,14 @@ class ConsoleInterface:
         self.continue_dialog = True
         self.datas = DatabaseUpdater()
 
-    def _five_days_in_concole(self):
+    def _all_days_in_console(self):
+        print('Функция "все дни в консоли"')
+
+        pass #TODO it!
+
+        print('Функция в разработке\n')
+
+    def _five_days_in_console(self):
         print('Функция "ближайшие пять дней в консоли"')
         datas = self.datas.return_data_for_selected_days()
         for data in datas:
@@ -495,21 +502,41 @@ class ConsoleInterface:
         self.datas.update_old_type_database()
         print('Данные переведены в новый формат\n')
 
+    def _get_period(self):
+        print('Функция "погода за период"')
+
+        pass #TODO it!
+
+        print('Функция в разработке\n')
+
+    def _upload_own_data(self):
+        print('Функция загрузки своих данных')
+
+        pass #TODO it!
+
+        print('Функция в разработке\n')
+
     def _exit(self):
         print('До встречи!')
         self.continue_dialog = False
 
     def main(self):
         print('Приветствуем тебя, юзернейм! Это программа парсинга погоды!')
+        all_funtion_in_that_class = [
+            ['Распечатать прогноз на все дни', self._all_days_in_console],
+            ['Распечатать прогноз на 5 дней в консоли', self._five_days_in_console],
+            ['Распечатать прогноз на 5 дней на карточках', self._five_days],
+            ['Загрузить новые данные с сайта', self._upload_data],
+            ['Обновить тип данных в старых датах', self._update_old_type_database],
+            ['Выгрузить данные за диапазон дат', self._get_period()],
+            ['Вбить свои данные за диапазон дат', self._upload_own_data()],
+            ['Выход', self._exit],
+        ]
+        options = {}
+        for i, func in enumerate(all_funtion_in_that_class):
+            options[str(i+1)] = func
 
         while self.continue_dialog:
-            options = {
-                '1': ['Распечатать прогноз на 5 дней в консоли', self._five_days_in_concole],
-                '2': ['Распечатать прогноз на 5 дней на карточках', self._five_days],
-                '3': ['Загрузить новые данные с сайта', self._upload_data],
-                '4': ['Обновить тип данных в старых датах', self._update_old_type_database],
-                '5': ['Выход', self._exit]
-            }
             while True:
                 print('Выберете действие:')
                 for num in options:
@@ -517,9 +544,7 @@ class ConsoleInterface:
 
                 user_input = input(f'Введите номер [1-{len(options)}] ')
                 print()
-
                 if user_input in options.keys():
-
                     options[user_input][1]()
                     break
                 else:
