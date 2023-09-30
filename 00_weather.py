@@ -293,7 +293,7 @@ class DatabaseUpdater:
             for day in days:
                 if day in date_list:
                     data_for_selected_days[day] = self.weather_data[day]
-        print(f'Доступен прогноз на следующие дни: {list(data_for_selected_days.keys())}')
+        # print(f'Доступен прогноз на следующие дни: {list(data_for_selected_days.keys())}')
         return data_for_selected_days
 
 
@@ -428,24 +428,32 @@ class ImageMaker:
         cv2.destroyAllWindows()
 
     def run(self, datas):
-        self.datas = datas
-        for data in datas:
+        self.datas = datas  # важно в run() обновить значение self.datas, иначе другие функции не сработают
+        for data in self.datas:
             image_cv2 = cv2.imread(self.form)
-            content = self.datas[data]['nune']['content']
-            weather = self.datas[data]['nune']['weather']
-            print(f'{data}: {content}, {weather}')
             self.draw_weather_card(image_cv2, name_of_window='Original version', data=data)
 
 
 class ConsoleInterface:
+
     def __init__(self):
         self.continue_dialog = True
+        self.datas = DatabaseUpdater()
+
+    def _five_days_in_concole(self):
+        print('Функция "ближайшие пять дней в консоли"')
+        datas = self.datas.return_data_for_selected_days()
+        for data in datas:
+            content = datas[data]['nune']['content']
+            weather = datas[data]['nune']['weather']
+            print(f'{data}: {content}, {weather}')
+        print()
 
     def _five_days(self):
-        print('Функция ближайшие пять дней')
-        datas_getter = DatabaseUpdater()
-        datas_for_five_days = datas_getter.return_data_for_selected_days()
+        print('Функция "ближайшие пять дней на карточках"')
+        datas_for_five_days = self.datas.return_data_for_selected_days()
         weather_cards = ImageMaker()
+
         weather_cards.run(datas_for_five_days) # по полученному словарю выбранных дат обращаемся отрисовываем содержание
         print()
 
@@ -455,8 +463,7 @@ class ConsoleInterface:
         get_weather.fetch_data()  # получаем данные с сайта
         current_dict_of_weather = get_weather.return_the_final_dict()  # получаем чистовой словарь для передачи в БД
 
-        db_updater = DatabaseUpdater()
-        db_updater.refresh_database(current_dict_of_weather)  # передаем словарь в обновитель базы данных
+        self.datas.refresh_database(current_dict_of_weather)  # передаем словарь в обновитель базы данных
         print('База обновлена\n')
 
     def _exit(self):
@@ -468,9 +475,10 @@ class ConsoleInterface:
 
         while self.continue_dialog:
             options = {
-                '1': ['Распечатать прогноз на 5 дней', self._five_days],
-                '2': ['Загрузить новые данные с сайта', self._upload_data],
-                '3': ['Выход', self._exit]
+                '1': ['Распечатать прогноз на 5 дней в консоли', self._five_days_in_concole],
+                '2': ['Распечатать прогноз на 5 дней на карточках', self._five_days],
+                '3': ['Загрузить новые данные с сайта', self._upload_data],
+                '4': ['Выход', self._exit]
             }
             while True:
                 print('Выберете действие:')
@@ -478,8 +486,10 @@ class ConsoleInterface:
                     print(f'{num}: {options[num][0]}')
 
                 user_input = input(f'Введите номер [1-{len(options)}] ')
+                print()
 
                 if user_input in options.keys():
+
                     options[user_input][1]()
                     break
                 else:
@@ -497,5 +507,4 @@ if __name__ == "__main__":
 # Среди действий, доступных пользователю должны быть:
 #   Добавление прогнозов за диапазон дат в базу данных
 #   Получение прогнозов за диапазон дат из базы
-#   Выведение полученных прогнозов на консоль
 # При старте консольная утилита должна загружать прогнозы за прошедшую неделю.
