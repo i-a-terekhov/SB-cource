@@ -439,52 +439,54 @@ class ImageMaker:
 
 class ConsoleInterface:
     def __init__(self):
-        pass
+        self.continue_dialog = True
 
     def _five_days(self):
+        print('Функция ближайшие пять дней')
         datas_getter = DatabaseUpdater()
         datas_for_five_days = datas_getter.return_data_for_selected_days()
         weather_cards = ImageMaker()
-        weather_cards.run(datas_for_five_days)
+        weather_cards.run(datas_for_five_days) # по полученному словарю выбранных дат обращаемся отрисовываем содержание
+        print()
+
+    def _upload_data(self):
+        print('Функция получения данных с сайта')
+        get_weather = WeatherScraper()
+        get_weather.fetch_data()  # получаем данные с сайта
+        current_dict_of_weather = get_weather.return_the_final_dict()  # получаем чистовой словарь для передачи в БД
+
+        db_updater = DatabaseUpdater()
+        db_updater.refresh_database(current_dict_of_weather)  # передаем словарь в обновитель базы данных
+        print('База обновлена\n')
+
+    def _exit(self):
+        print('До встречи!')
+        self.continue_dialog = False
 
     def main(self):
         print('Приветствуем тебя, юзернейм! Это программа парсинга погоды!')
 
-        options = {
-            '1': ['Рапечатать прогноз на 5 дней', self._five_days],
-            '2': ['В разработке', print],
-            '3': ['В разработке 2', print]
-        }
-        while True:
-            print('Выберете действие:')
-            for num in options:
-                print(f'{num}: {options[num][0]}')
-            user_input = input("Введите номер действия ")
+        while self.continue_dialog:
+            options = {
+                '1': ['Распечатать прогноз на 5 дней', self._five_days],
+                '2': ['Загрузить новые данные с сайта', self._upload_data],
+                '3': ['Выход', self._exit]
+            }
+            while True:
+                print('Выберете действие:')
+                for num in options:
+                    print(f'{num}: {options[num][0]}')
 
-            if user_input in options.keys():
-                print(f'Вы выбрали функцию {options[user_input][1]}')
-                options[user_input][1]()
-                break
-            else:
-                print("Неверный ввод")
+                user_input = input(f'Введите номер [1-{len(options)}] ')
+
+                if user_input in options.keys():
+                    options[user_input][1]()
+                    break
+                else:
+                    print("Неверный ввод\n")
+
 
 if __name__ == "__main__":
-    # get_weather = WeatherScraper()
-    # get_weather.fetch_data()  # получаем данные с сайта
-    # current_dict_of_weather = get_weather.return_the_final_dict()  # получаем чистовой словарь для передачи в БД
-
-    db_updater = DatabaseUpdater()
-    # db_updater.refresh_database(current_dict_of_weather)  # передаем словарь в обновитель базы данных
-
-    # получаем словарь с данными для выбранных дат из БД, для дальнейшей передачи в ImageMaker:
-    datas = db_updater.return_data_for_selected_days(days=['25 of September', '27 of September'])
-
-    img = ImageMaker()
-    img.run(datas)  # по полученному словарю выбранных дат обращаемся отрисовываем содержание
-
-    # datas = db_updater.return_data_for_selected_days()
-    # img.run(datas)
-
     dialog = ConsoleInterface()
     dialog.main()
 
