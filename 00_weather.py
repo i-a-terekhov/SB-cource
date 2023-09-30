@@ -110,13 +110,18 @@ class WeatherScraper:
         f_raw_days_dates = self._regular_filter(date_list=raw_days_dates)
         all_days_dates = []
         all_days_weekdays = []
+        all_days_full_dates = []
         for date in f_raw_days_dates:
             date, weekday = date.split(', ')
             all_days_dates.extend([date, date, date, date])
             all_days_weekdays.extend([weekday, weekday, weekday, weekday])
+            d = self._translate_datas(date)
+            print('Д=', d, 'дейта=', date)
+            all_days_full_dates.extend([str_en_date_to_date(d)])
 
         self.weather_row_data['dates'] = all_days_dates
         self.weather_row_data['weekdays'] = all_days_weekdays
+        self.weather_row_data['full_dates'] = all_days_full_dates
 
     def _extract_times(self, html_doc):
         all_days_times = []
@@ -220,8 +225,9 @@ class WeatherScraper:
         times = self.weather_row_data['times']
         contents = self.weather_row_data['contents']
         weather = self.weather_row_data['weather']
+        full_dates = self.weather_row_data['full_dates']
 
-        for d, wd, t, c, w in zip(dates, weekdays, times, contents, weather):
+        for d, wd, t, c, w, fd in zip(dates, weekdays, times, contents, weather, full_dates):
             d = self._translate_datas(d)
             wd = self._translate_weekday(wd)
             t = self._translate_times(t)
@@ -231,7 +237,8 @@ class WeatherScraper:
             entry = {
                 'weekday': wd,
                 'content': c,
-                'weather': w
+                'weather': w,
+                'full_date': fd,
             }
             if d not in self.new_weather_dict:
                 self.new_weather_dict[d] = {}
@@ -246,6 +253,23 @@ class WeatherScraper:
             return self.new_weather_dict
         else:
             raise Exception('Словарь текущей погоды не сформирован')
+
+
+def str_en_date_to_date(date_str):
+    today = datetime.now().date()
+    parts = date_str.split(' of ')
+    day = int(parts[0])
+    month = datetime.strptime(parts[1], '%B').month
+    return datetime(today.year, month, day).date()
+
+def str_ru_date_to_date(date_str):
+    # today = datetime.now().date()
+    # parts = date_str.split(' ')
+    # day = int(parts[0])
+    # month = parts[1]
+    # month = datetime.strptime(parts[1], '%B').month
+    # return datetime(today.year, month, day).date()
+    pass
 
 
 class DatabaseUpdater:
@@ -270,12 +294,6 @@ class DatabaseUpdater:
         if not self.weather_data:
             self._get_datas_from_bd()
 
-        def str_date_to_date(date_str):
-            parts = date_str.split(' of ')
-            day = int(parts[0])
-            month = datetime.strptime(parts[1], '%B').month
-            return datetime(today.year, month, day).date()
-
         data_for_selected_days = {}
         date_list = self.weather_data.keys()
         if days is None:
@@ -283,7 +301,7 @@ class DatabaseUpdater:
             max_weather_cards = 5
             selected_dates = 0
             for date_str in date_list:
-                date = str_date_to_date(date_str)
+                date = str_en_date_to_date(date_str)
                 if date >= today:
                     selected_dates += 1
                     data_for_selected_days[date_str] = self.weather_data[date_str]
