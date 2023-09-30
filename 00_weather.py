@@ -55,6 +55,7 @@ import cv2
 import numpy as np
 import json
 from datetime import datetime
+from pprint import pprint
 
 
 class WeatherScraper:
@@ -115,9 +116,8 @@ class WeatherScraper:
             date, weekday = date.split(', ')
             all_days_dates.extend([date, date, date, date])
             all_days_weekdays.extend([weekday, weekday, weekday, weekday])
-            d = self._translate_datas(date)
-            print('Д=', d, 'дейта=', date)
-            all_days_full_dates.extend([str_en_date_to_date(d)])
+            fd = str(str_en_date_to_date(self._translate_datas(date)))
+            all_days_full_dates.extend([fd, fd, fd, fd])
 
         self.weather_row_data['dates'] = all_days_dates
         self.weather_row_data['weekdays'] = all_days_weekdays
@@ -247,9 +247,11 @@ class WeatherScraper:
 
         # pprint(self.new_weather_dict)
 
-    def return_the_final_dict(self):
+    def return_the_final_dict(self, output=False):
         if len(self.weather_row_data) > 0:
             self._create_weather_dict()
+            if output:
+                pprint(self.new_weather_dict)
             return self.new_weather_dict
         else:
             raise Exception('Словарь текущей погоды не сформирован')
@@ -262,15 +264,6 @@ def str_en_date_to_date(date_str):
     month = datetime.strptime(parts[1], '%B').month
     return datetime(today.year, month, day).date()
 
-def str_ru_date_to_date(date_str):
-    # today = datetime.now().date()
-    # parts = date_str.split(' ')
-    # day = int(parts[0])
-    # month = parts[1]
-    # month = datetime.strptime(parts[1], '%B').month
-    # return datetime(today.year, month, day).date()
-    pass
-
 
 class DatabaseUpdater:
     def __init__(self):
@@ -282,6 +275,19 @@ class DatabaseUpdater:
             existing_data = json.load(file)
 
         existing_data.update(new_weather_dict)
+
+        with open(self.database_name, 'w', encoding='utf-8') as file:
+            json.dump(existing_data, file, ensure_ascii=False, indent=4)
+
+    def update_old_type_database(self):
+        with open(self.database_name, 'r', encoding='utf-8') as file:
+            existing_data = json.load(file)
+
+        for date in existing_data:
+            for time in existing_data[date]:
+                if 'full_date' not in existing_data[date][time].keys():
+                    fd = str(str_en_date_to_date(date))
+                    existing_data[date][time]['full_dates'] = fd
 
         with open(self.database_name, 'w', encoding='utf-8') as file:
             json.dump(existing_data, file, ensure_ascii=False, indent=4)
@@ -484,6 +490,11 @@ class ConsoleInterface:
         self.datas.refresh_database(current_dict_of_weather)  # передаем словарь в обновитель базы данных
         print('База обновлена\n')
 
+    def _update_old_type_database(self):
+        print('Функция обновления типа данных в базе')
+        self.datas.update_old_type_database()
+        print('Данные переведены в новый формат\n')
+
     def _exit(self):
         print('До встречи!')
         self.continue_dialog = False
@@ -496,7 +507,8 @@ class ConsoleInterface:
                 '1': ['Распечатать прогноз на 5 дней в консоли', self._five_days_in_concole],
                 '2': ['Распечатать прогноз на 5 дней на карточках', self._five_days],
                 '3': ['Загрузить новые данные с сайта', self._upload_data],
-                '4': ['Выход', self._exit]
+                '4': ['Обновить тип данных в старых датах', self._update_old_type_database],
+                '5': ['Выход', self._exit]
             }
             while True:
                 print('Выберете действие:')
