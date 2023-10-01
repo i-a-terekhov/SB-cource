@@ -285,9 +285,13 @@ class DatabaseUpdater:
 
         for date in existing_data:
             for time in existing_data[date]:
+                # добавляем новый ключ:
                 if 'full_date' not in existing_data[date][time].keys():
                     fd = str(str_en_date_to_date(date))
-                    existing_data[date][time]['full_dates'] = fd
+                    existing_data[date][time]['full_date'] = fd
+                # удаляем некорректный ключ:
+                if 'full_dates' in existing_data[date][time].keys():
+                    del existing_data[date][time]['full_dates']
 
         with open(self.database_name, 'w', encoding='utf-8') as file:
             json.dump(existing_data, file, ensure_ascii=False, indent=4)
@@ -513,9 +517,33 @@ class ConsoleInterface:
     def _get_period(self):
         print('Функция "погода за период"')
 
-        pass #TODO it!
+        # TODO выделить в отдельную функцию: для проверки вводов начальной и конечной дат:
+        while True:
+            user_date = input('Введите начальную дату в формате дд.мм.гг ')
+            pattern = r'[0123]?[0-9]\.(0?[1-9]|1[012])\.2[34]'
+            output_is_good = re.match(pattern, user_date)
 
-        print('Функция в разработке\n')
+            if output_is_good:
+                d, m, y = user_date.split('.')
+                clear_date = '20' + y + '-' + m + '-' + d
+                break
+            else:
+                print('Некорректная дата!')
+        print('Получили дату:', clear_date)
+
+        # TODO выделить в отдельную функцию: для проверки вводов начальной и конечной дат:
+        full_dates_list = []
+        for date_data in self.datas.return_data_for_all_days().values():
+            full_dates_list.append(date_data['nune']['full_date'])
+        print(full_dates_list)
+
+        if clear_date in full_dates_list:
+            print('На эту дату есть прогноз!')
+        else:
+            print('Такой даты нет в записях!')
+        print()
+
+        return clear_date
 
     def _upload_own_data(self):
         print('Функция загрузки своих данных')
