@@ -320,6 +320,11 @@ class DatabaseUpdater:
         # print(f'Доступен прогноз на следующие дни: {list(data_for_selected_days.keys())}')
         return data_for_selected_days
 
+    def return_data_for_all_days(self):
+        if not self.weather_data:
+            self._get_datas_from_bd()
+        return self.weather_data
+
 
 class ImageMaker:
 
@@ -458,6 +463,15 @@ class ImageMaker:
             self.draw_weather_card(image_cv2, name_of_window='Original version', data=data)
 
 
+def print_dict_of_datas(datas):
+    for data in datas:
+        day, month = data.split(' of ')
+        content = datas[data]['nune']['content']
+        weather = datas[data]['nune']['weather']
+        print(f'{day:>2} of {month:9}: {content:>3}, {weather}')
+    print()
+
+
 class ConsoleInterface:
 
     def __init__(self):
@@ -466,19 +480,13 @@ class ConsoleInterface:
 
     def _all_days_in_console(self):
         print('Функция "все дни в консоли"')
-
-        pass #TODO it!
-
-        print('Функция в разработке\n')
+        datas = self.datas.return_data_for_all_days()
+        print_dict_of_datas(datas)
 
     def _five_days_in_console(self):
         print('Функция "ближайшие пять дней в консоли"')
         datas = self.datas.return_data_for_selected_days()
-        for data in datas:
-            content = datas[data]['nune']['content']
-            weather = datas[data]['nune']['weather']
-            print(f'{data}: {content}, {weather}')
-        print()
+        print_dict_of_datas(datas)
 
     def _five_days(self):
         print('Функция "ближайшие пять дней на карточках"')
@@ -527,9 +535,9 @@ class ConsoleInterface:
             ['Распечатать прогноз на 5 дней в консоли', self._five_days_in_console],
             ['Распечатать прогноз на 5 дней на карточках', self._five_days],
             ['Загрузить новые данные с сайта', self._upload_data],
-            ['Обновить тип данных в старых датах', self._update_old_type_database],
-            ['Выгрузить данные за диапазон дат', self._get_period()],
-            ['Вбить свои данные за диапазон дат', self._upload_own_data()],
+            # ['Обновить тип данных в старых датах', self._update_old_type_database],
+            ['Выгрузить данные за диапазон дат', self._get_period],
+            ['Вбить свои данные за диапазон дат', self._upload_own_data],
             ['Выход', self._exit],
         ]
         options = {}
