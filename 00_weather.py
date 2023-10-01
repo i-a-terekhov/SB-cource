@@ -265,6 +265,14 @@ def str_en_date_to_date(date_str):
     return datetime(today.year, month, day).date()
 
 
+def date_to_str_en_date(date_str):
+    date_obj = datetime.strptime(date_str, "%Y-%m-%d")
+    formatted_date = date_obj.strftime("%d of %B")
+    if formatted_date.startswith("0"):
+        formatted_date = formatted_date[1:]
+    return formatted_date
+
+
 class DatabaseUpdater:
     def __init__(self):
         self.database_name = r'C:\Users\Ivan\PyCharm\SkillBox\lesson_016\weather_dict.json'
@@ -481,6 +489,9 @@ class ConsoleInterface:
     def __init__(self):
         self.continue_dialog = True
         self.datas = DatabaseUpdater()
+        self.full_dates_list = []
+        for date_data in self.datas.return_data_for_all_days().values():
+            self.full_dates_list.append(date_data['nune']['full_date'])
 
     def _all_days_in_console(self):
         print('Функция "все дни в консоли"')
@@ -496,8 +507,7 @@ class ConsoleInterface:
         print('Функция "ближайшие пять дней на карточках"')
         datas_for_five_days = self.datas.return_data_for_selected_days()
         weather_cards = ImageMaker()
-
-        weather_cards.run(datas_for_five_days) # по полученному словарю выбранных дат обращаемся отрисовываем содержание
+        weather_cards.run(datas_for_five_days)  # по полученному словарю дат рисуем карточки
         print()
 
     def _upload_data(self):
@@ -514,36 +524,44 @@ class ConsoleInterface:
         self.datas.update_old_type_database()
         print('Данные переведены в новый формат\n')
 
-    def _get_period(self):
-        print('Функция "погода за период"')
-
-        # TODO выделить в отдельную функцию: для проверки вводов начальной и конечной дат:
+    def _check_user_date_output(self, text=''):
         while True:
-            user_date = input('Введите начальную дату в формате дд.мм.гг ')
-            pattern = r'[0123]?[0-9]\.(0?[1-9]|1[012])\.2[34]'
-            output_is_good = re.match(pattern, user_date)
-
-            if output_is_good:
-                d, m, y = user_date.split('.')
-                clear_date = '20' + y + '-' + m + '-' + d
+            while True:
+                user_input = input(f'Введите {text}дату в формате дд.мм.гг ')
+                pattern = r'([0]?[1-9]|[12][0-9]|3[01])\.(0?[1-9]|1[012])\.2[34]'
+                output_is_good = re.match(pattern, user_input)
+                if output_is_good:
+                    d, m, y = user_input.split('.')
+                    clear_date = '20' + y + '-' + m + '-' + d
+                    break
+                else:
+                    print('Некорректная дата!')
+            if clear_date in self.full_dates_list:
                 break
             else:
-                print('Некорректная дата!')
-        print('Получили дату:', clear_date)
+                print('Такой даты нет в записях!')
+        return clear_date
 
-        # TODO выделить в отдельную функцию: для проверки вводов начальной и конечной дат:
-        full_dates_list = []
-        for date_data in self.datas.return_data_for_all_days().values():
-            full_dates_list.append(date_data['nune']['full_date'])
-        print(full_dates_list)
-
-        if clear_date in full_dates_list:
-            print('На эту дату есть прогноз!')
-        else:
-            print('Такой даты нет в записях!')
+    def _get_period(self):
+        print('Функция "погода за период"')
+        while True:
+            start_date = self._check_user_date_output('начальную ')
+            finish_date = self._check_user_date_output('конечную ')
+            if self.full_dates_list.index(start_date) <= self.full_dates_list.index(finish_date):
+                break
+            else:
+                print('Конечная дата должна быть больше или равной начальной!')
         print()
 
-        return clear_date
+        start_date_obj = datetime.strptime(start_date, "%Y-%m-%d")
+        finish_date_obj = datetime.strptime(finish_date, "%Y-%m-%d")
+
+        selected_period = [date for date in self.full_dates_list if
+                           start_date_obj <= datetime.strptime(date, "%Y-%m-%d") <= finish_date_obj]
+        selected_period_str = [date_to_str_en_date(date) for date in selected_period]
+
+        datas = self.datas.return_data_for_selected_days(selected_period_str)
+        print_dict_of_datas(datas)
 
     def _upload_own_data(self):
         print('Функция загрузки своих данных')
@@ -594,8 +612,5 @@ if __name__ == "__main__":
 # запуск в консоли: C:\Users\Ivan\PyCharm\SkillBox\lesson_016\venv\Scripts\Python.exe C:\Users\Ivan\PyCharm\SkillBox\lesson_016\00_weather.py
 
 #TODO
-# Сделать программу с консольным интерфейсом, постаравшись все выполняемые действия вынести в отдельные функции.
 # Среди действий, доступных пользователю должны быть:
 #   Добавление прогнозов за диапазон дат в базу данных
-#   Получение прогнозов за диапазон дат из базы
-# При старте консольная утилита должна загружать прогнозы за прошедшую неделю.
