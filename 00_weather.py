@@ -56,6 +56,7 @@ import numpy as np
 import json
 from datetime import datetime, timedelta
 from pprint import pprint
+import os
 
 
 class WeatherScraper:
@@ -278,13 +279,21 @@ class DatabaseUpdater:
         self.database_name = r'C:\Users\Ivan\PyCharm\SkillBox\lesson_016\weather_dict.json'
         self.weather_data = None
 
-    def refresh_database(self, new_weather_dict):
-        with open(self.database_name, 'r', encoding='utf-8') as file:
+    def refresh_database(self, new_weather_dict, make_copy=False):
+        bd_full_path = self.database_name
+        with open(bd_full_path, 'r', encoding='utf-8') as file:
             existing_data = json.load(file)
 
         existing_data.update(new_weather_dict)
 
-        with open(self.database_name, 'w', encoding='utf-8') as file:
+        if make_copy:
+            directory, filename = os.path.split(bd_full_path)
+            filename, extension = os.path.splitext(filename)
+            new_filename = f'{filename}_copy{extension}'
+            bd_full_path = os.path.join(directory, new_filename)
+            print('Создана копия', bd_full_path)
+
+        with open(bd_full_path, 'w', encoding='utf-8') as file:
             json.dump(existing_data, file, ensure_ascii=False, indent=4)
 
     def update_old_type_database(self):
@@ -516,7 +525,7 @@ class ConsoleInterface:
         get_weather.fetch_data()  # получаем данные с сайта
         current_dict_of_weather = get_weather.return_the_final_dict()  # получаем чистовой словарь для передачи в БД
 
-        self.datas.refresh_database(current_dict_of_weather)  # передаем словарь в обновитель базы данных
+        self.datas.refresh_database(current_dict_of_weather, make_copy=False)  # передаем словарь в обновитель базы данных
         print('База обновлена\n')
 
     def _update_old_type_database(self):
@@ -590,7 +599,13 @@ class ConsoleInterface:
             date_list.append(current_date_obj.strftime('%Y-%m-%d'))
             current_date_obj += timedelta(days=1)
         print('получили даты', date_list)
-        return date_list
+
+        new_weather_dict = {'проба': 'ничего'}
+        # для облегчения заполнения словаря
+        for day in date_list:
+
+
+        self.datas.refresh_database(new_weather_dict, make_copy=True)
 
     def _exit(self):
         print('До встречи!')
