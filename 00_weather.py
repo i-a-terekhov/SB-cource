@@ -54,7 +54,7 @@ import re
 import cv2
 import numpy as np
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from pprint import pprint
 
 
@@ -524,18 +524,22 @@ class ConsoleInterface:
         self.datas.update_old_type_database()
         print('Данные переведены в новый формат\n')
 
-    def _check_user_date_output(self, text=''):
+    def _user_input_to_clear_date(self, text=''):
         while True:
-            while True:
-                user_input = input(f'Введите {text}дату в формате дд.мм.гг ')
-                pattern = r'([0]?[1-9]|[12][0-9]|3[01])\.(0?[1-9]|1[012])\.2[34]'
-                output_is_good = re.match(pattern, user_input)
-                if output_is_good:
-                    d, m, y = user_input.split('.')
-                    clear_date = '20' + y + '-' + m + '-' + d
-                    break
-                else:
-                    print('Некорректная дата!')
+            user_input = input(f'Введите {text}дату в формате дд.мм.гг ')
+            pattern = r'([0]?[1-9]|[12][0-9]|3[01])\.(0?[1-9]|1[012])\.2[34]'
+            output_is_good = re.match(pattern, user_input)
+            if output_is_good:
+                d, m, y = user_input.split('.')
+                clear_date = '20' + y + '-' + m + '-' + d
+                break
+            else:
+                print('Некорректная дата!')
+        return clear_date
+
+    def _check_clear_date(self, text=''):
+        while True:
+            clear_date = self._user_input_to_clear_date(text)
             if clear_date in self.full_dates_list:
                 break
             else:
@@ -545,8 +549,8 @@ class ConsoleInterface:
     def _get_period(self):
         print('Функция "погода за период"')
         while True:
-            start_date = self._check_user_date_output('начальную ')
-            finish_date = self._check_user_date_output('конечную ')
+            start_date = self._check_clear_date('начальную ')
+            finish_date = self._check_clear_date('конечную ')
             if self.full_dates_list.index(start_date) <= self.full_dates_list.index(finish_date):
                 break
             else:
@@ -565,10 +569,28 @@ class ConsoleInterface:
 
     def _upload_own_data(self):
         print('Функция загрузки своих данных')
+        while True:
+            start_date = self._user_input_to_clear_date('начальную')
+            finish_date = self._user_input_to_clear_date('конечную')
 
-        pass #TODO it!
+            start_date_obj = datetime.strptime(start_date, "%Y-%m-%d")
+            finish_date_obj = datetime.strptime(finish_date, "%Y-%m-%d")
 
-        print('Функция в разработке\n')
+            summ_of_days = (finish_date_obj - start_date_obj).days
+            if start_date_obj > finish_date_obj:
+                print('Конечная дата должна быть больше или равной начальной!\n')
+            elif summ_of_days > 3:
+                print('Период получился более 3-х дней. Вы замучаетесь вбивать...\n')
+            else:
+                break
+
+        date_list = []
+        current_date_obj = start_date_obj
+        while current_date_obj <= finish_date_obj:
+            date_list.append(current_date_obj.strftime('%Y-%m-%d'))
+            current_date_obj += timedelta(days=1)
+        print('получили даты', date_list)
+        return date_list
 
     def _exit(self):
         print('До встречи!')
