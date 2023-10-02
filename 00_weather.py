@@ -291,7 +291,7 @@ class DatabaseUpdater:
             filename, extension = os.path.splitext(filename)
             new_filename = f'{filename}_copy{extension}'
             bd_full_path = os.path.join(directory, new_filename)
-            print('Создана копия', bd_full_path)
+            print('Создана копия', bd_full_path, '\n')
 
         with open(bd_full_path, 'w', encoding='utf-8') as file:
             json.dump(existing_data, file, ensure_ascii=False, indent=4)
@@ -598,12 +598,30 @@ class ConsoleInterface:
         while current_date_obj <= finish_date_obj:
             date_list.append(current_date_obj.strftime('%Y-%m-%d'))
             current_date_obj += timedelta(days=1)
-        print('получили даты', date_list)
+        print()
 
-        new_weather_dict = {'проба': 'ничего'}
-        # для облегчения заполнения словаря
+        # Для облегчения заполнения словаря ввод осуществляется только для 'nune'. Остальные времена заполнятся ничем
+        new_weather_dict = {}
         for day in date_list:
+            str_day = date_to_str_en_date(day)
+            new_weather_dict[str_day] = {}
 
+            day_obj = datetime.strptime(day, "%Y-%m-%d")
+            wd = day_obj.strftime("%A")  # день недели
+
+            content = input(f'Введите значение температуры на дату {str_day}, {wd}: ')
+            weather = input(f'Введите описание погоды на дату {str_day}, {wd}: ')
+
+            new_weather_dict[str_day]['night'] = {"weekday": wd, "content": '-', "weather": '-', "full_date": day}
+            new_weather_dict[str_day]['morning'] = {"weekday": wd, "content": '-', "weather": '-', "full_date": day}
+            new_weather_dict[str_day]['nune'] = {
+                "weekday": wd,
+                "content": content,
+                "weather": weather,
+                "full_date": day
+            }
+            new_weather_dict[str_day]['evening'] = {"weekday": wd, "content": '-', "weather": '-', "full_date": day}
+            print()
 
         self.datas.refresh_database(new_weather_dict, make_copy=True)
 
@@ -647,7 +665,3 @@ if __name__ == "__main__":
     dialog.main()
 
 # запуск в консоли: C:\Users\Ivan\PyCharm\SkillBox\lesson_016\venv\Scripts\Python.exe C:\Users\Ivan\PyCharm\SkillBox\lesson_016\00_weather.py
-
-#TODO
-# Среди действий, доступных пользователю должны быть:
-#   Добавление прогнозов за диапазон дат в базу данных
