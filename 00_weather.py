@@ -741,11 +741,9 @@ if __name__ == "__main__":
     all_weather_data = WeatherData.select()
     # Получение данных из модели для всех записей
     for data in all_weather_data:
-        print(data.field_name)
-    # TODO разобраться с обходом вложенных данных
-        # Переберем вложенные словари и выведем их ключи и значения
-        # for key, value in data.WeatherData.items():
-        #     print(f'{key}: {value}')
+    # TODO разобраться с обходом вложенных данных:
+        for key, value in data.__data__.items():
+            print(f"{key}: {value}")
 
     # Получение данных из модели для конкретной даты
     specific_date = '2023-10-01'
