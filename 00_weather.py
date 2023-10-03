@@ -348,42 +348,59 @@ class DatabaseUpdater:
         return self.weather_data
 
 
-db = peewee.SqliteDatabase('weather_database.bd')
+database = peewee.SqliteDatabase('weather_database.bd')
+
+
+class BaseTable(peewee.Model):
+    # В подклассе Meta указываем подключение к той или иной базе данных
+    class Meta:
+        database = database
 
 
 # Определение модели для данных о погоде
-class WeatherData(peewee.Model):
+class WeatherData(BaseTable):
     weekday = peewee.CharField()
     content = peewee.CharField()
     weather = peewee.CharField()
     full_date = peewee.CharField(unique=True)
 
-    class Meta:
-        database = db
+# Создание таблицы в базе данных. Используется для установления соединения с базой данных,
+# # которое требуется перед выполнением операций с базой данных:
+database.connect()
 
-
-# Создание таблицы в базе данных
-db.connect()
-db.create_tables([WeatherData])
+# здесь может быть несколько таблиц, на основе которых создается database.
+# пытается создать таблицу с именем WeatherData, если она еще не существует.
+# Если таблица уже существует, эта операция просто игнорируется. Таким образом,
+#  это безопасный способ убедиться, что нужная таблица существует в базе данных
+#  без риска повторного создания:
+database.create_tables([WeatherData])
 
 
 # Функция для сохранения данных о погоде в базу данных
 def save_weather_data(data):
-    for date, values in data.items():
-        try:
-            WeatherData.create(
-                weekday=values['weekday'],
-                content=values['content'],
-                weather=values['weather'],
-                full_date=values['full_date']
-            )
-        except peewee.IntegrityError:
-            # Если запись с такой датой уже существует, то обновляем ее
-            existing_data = WeatherData.get(full_date=values['full_date'])
-            existing_data.weekday = values['weekday']
-            existing_data.content = values['content']
-            existing_data.weather = values['weather']
-            existing_data.save()
+    for date, times_data in data.items():
+        for time, values in times_data.items():
+            # Извлекаем данные из вложенного словаря
+            weekday = values.get('weekday')
+            content = values.get('content')
+            weather = values.get('weather')
+            full_date = values.get('full_date')
+
+            try:
+                WeatherData.create(
+                    weekday=weekday,
+                    content=content,
+                    weather=weather,
+                    full_date=full_date
+                )
+            except peewee.IntegrityError:
+                # Если запись с такой датой уже существует, то обновляем ее
+                existing_data = WeatherData.get(full_date=full_date)
+                existing_data.weekday = weekday
+                existing_data.content = content
+                existing_data.weather = weather
+                existing_data.save()
+
 
 # # Пример данных о погоде
 # weather_data = {
@@ -578,7 +595,8 @@ class ConsoleInterface:
         get_weather.fetch_data()  # получаем данные с сайта
         current_dict_of_weather = get_weather.return_the_final_dict()  # получаем чистовой словарь для передачи в БД
 
-        self.datas.refresh_database(current_dict_of_weather, make_copy=False)  # передаем словарь в обновитель базы данных
+        self.datas.refresh_database(current_dict_of_weather,
+                                    make_copy=False)  # передаем словарь в обновитель базы данных
         print('База обновлена\n')
 
     def _update_old_type_database(self):
@@ -696,7 +714,7 @@ class ConsoleInterface:
         ]
         options = {}
         for i, func in enumerate(all_funtion_in_that_class):
-            options[str(i+1)] = func
+            options[str(i + 1)] = func
 
         while self.continue_dialog:
             while True:
@@ -717,6 +735,28 @@ if __name__ == "__main__":
     dialog = ConsoleInterface()
     dialog.main()
 
+    current_weather_dict = dialog.datas.return_data_for_all_days()
+    save_weather_data(current_weather_dict)
+
+    all_weather_data = WeatherData.select()
+    # Получение данных из модели для всех записей
+    for data in all_weather_data:
+        print(data.field_name)
+    # TODO разобраться с обходом вложенных данных
+        # Переберем вложенные словари и выведем их ключи и значения
+        # for key, value in data.WeatherData.items():
+        #     print(f'{key}: {value}')
+
+    # Получение данных из модели для конкретной даты
+    specific_date = '2023-10-01'
+    weather_data_for_specific_date = WeatherData.select().where(WeatherData.full_date == specific_date)
+    for data in weather_data_for_specific_date:
+        print(data.content)  # Здесь field_name - это имя поля в вашей модели, например, 'content'
+
+    # Получение данных из модели для конкретной даты (единственная запись)
+    specific_date = '2023-10-01'
+    data_for_specific_date = WeatherData.get(WeatherData.full_date == specific_date)
+    print(data_for_specific_date.weather)  # Здесь field_name - это имя поля в вашей модели, например, 'weather'
 
 #TODO:
 # проверить фактическое обновление данных, выводимых на печать, после обновления данных на сайте
