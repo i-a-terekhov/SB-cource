@@ -57,6 +57,7 @@ import json
 from datetime import datetime, timedelta
 from pprint import pprint
 import os
+import peewee
 
 
 class WeatherScraper:
@@ -345,6 +346,58 @@ class DatabaseUpdater:
         if not self.weather_data:
             self._get_datas_from_bd()
         return self.weather_data
+
+
+db = peewee.SqliteDatabase('weather_database.bd')
+
+
+# Определение модели для данных о погоде
+class WeatherData(peewee.Model):
+    weekday = peewee.CharField()
+    content = peewee.CharField()
+    weather = peewee.CharField()
+    full_date = peewee.CharField(unique=True)
+
+    class Meta:
+        database = db
+
+
+# Создание таблицы в базе данных
+db.connect()
+db.create_tables([WeatherData])
+
+
+# Функция для сохранения данных о погоде в базу данных
+def save_weather_data(data):
+    for date, values in data.items():
+        try:
+            WeatherData.create(
+                weekday=values['weekday'],
+                content=values['content'],
+                weather=values['weather'],
+                full_date=values['full_date']
+            )
+        except peewee.IntegrityError:
+            # Если запись с такой датой уже существует, то обновляем ее
+            existing_data = WeatherData.get(full_date=values['full_date'])
+            existing_data.weekday = values['weekday']
+            existing_data.content = values['content']
+            existing_data.weather = values['weather']
+            existing_data.save()
+
+# # Пример данных о погоде
+# weather_data = {
+#     "26 of September": {
+#         "weekday": "Tuesday",
+#         "content": "+1",
+#         "weather": "Clear weather, no precipitation",
+#         "full_date": "2023-09-26"
+#     },
+#     # Другие записи о погоде...
+# }
+#
+# # Сохранение данных о погоде в базу данных
+# save_weather_data(weather_data)
 
 
 class ImageMaker:
@@ -663,5 +716,11 @@ class ConsoleInterface:
 if __name__ == "__main__":
     dialog = ConsoleInterface()
     dialog.main()
+
+
+#TODO:
+# проверить фактическое обновление данных, выводимых на печать, после обновления данных на сайте
+# (вероятно, новые данные не подгружаются в переменную datas из ConsoleInterface._all_days_in_console
+# после функции ConsoleInterface._upload_data
 
 # запуск в консоли: C:\Users\Ivan\PyCharm\SkillBox\lesson_016\venv\Scripts\Python.exe C:\Users\Ivan\PyCharm\SkillBox\lesson_016\00_weather.py
