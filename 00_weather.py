@@ -217,8 +217,9 @@ class WeatherScraper:
             'Пасмурно, небольшие дожди': 'Overcast, light rain',
             'Облачно, без осадков': 'Cloudy, no precipitation',
             'Переменная облачность, небольшие дожди': 'Variable cloudiness, light rain',
+            'Пасмурно, снег с дождем': 'Cloudy, snow and rain',
         }
-        w = weather_translate.get(w)
+        w = weather_translate.get(w, w)
         return w
 
     def _create_weather_dict(self):
@@ -352,7 +353,6 @@ database = peewee.SqliteDatabase('weather_database.bd')
 
 
 class BaseTable(peewee.Model):
-    # В подклассе Meta указываем подключение к той или иной базе данных
     class Meta:
         database = database
 
@@ -366,8 +366,8 @@ class TimeOfDay(BaseTable):
 
 
 class WeatherData(BaseTable):
-    day = peewee.ForeignKeyField(Day, field='day')
-    time = peewee.ForeignKeyField(TimeOfDay, field='time')
+    day = peewee.ForeignKeyField(Day)
+    time = peewee.ForeignKeyField(TimeOfDay)
     weekday = peewee.CharField()
     content = peewee.CharField()
     weather = peewee.CharField()
@@ -395,21 +395,6 @@ def save_weather_data(weather_dict):
                 weather=weather,
                 full_date=full_date
             )
-
-
-# # Пример данных о погоде
-# weather_data = {
-#     "26 of September": {
-#         "weekday": "Tuesday",
-#         "content": "+1",
-#         "weather": "Clear weather, no precipitation",
-#         "full_date": "2023-09-26"
-#     },
-#     # Другие записи о погоде...
-# }
-#
-# # Сохранение данных о погоде в базу данных
-# save_weather_data(weather_data)
 
 
 class ImageMaker:
@@ -471,6 +456,7 @@ class ImageMaker:
             'Overcast, light rain': 'rain.jpg',
             'Cloudy, no precipitation': 'cloud.jpg',
             'Variable cloudiness, light rain': 'rain.jpg',
+            'Cloudy, snow and rain': 'snow.jpg',
         }
         icon_path = location + '\\' + weather_icon[self.datas[data]['nune']['weather']]
         return icon_path
@@ -484,6 +470,7 @@ class ImageMaker:
             'Overcast, light rain': [(169, 169, 169), (0, 0, 255)],  # Серый к синему
             'Cloudy, no precipitation': [(169, 169, 169), (255, 255, 255)],  # Серый к белому
             'Variable cloudiness, light rain': [(135, 206, 235), (0, 0, 255)],  # Голубой к синему
+            'Cloudy, snow and rain': [(169, 169, 169), (255, 255, 255)],  # Серый к белому
         }
 
         weather = self.datas[data]['nune']['weather']
@@ -592,7 +579,7 @@ class ConsoleInterface:
 
         self.datas.refresh_database(current_dict_of_weather,
                                     make_copy=False)  # передаем словарь в обновитель базы данных
-        self.datas.return_data_for_all_days()  # обновляем значение self.datas, с которой работают другие функции
+        self.datas._get_datas_from_bd()  # обновляем значение self.datas, с которой работают другие функции
         print('База обновлена\n')
 
     def _update_old_type_database(self):
@@ -737,21 +724,26 @@ if __name__ == "__main__":
     all_weather_data = WeatherData.select()
     # Получение данных из модели для всех записей
     for data in all_weather_data:
+        # pprint(data.__data__.items())
         for key, value in data.__data__.items():
-            print(f"{key}: {value}")
-        print('-' * 20)
+            print(f"{key:}: {value:4}", end=', ')
+        print()
+        print('~' * 150)
 
-    # Получение данных из модели для конкретной даты
-    specific_date = '2023-10-01'
-    weather_data_for_specific_date = WeatherData.select().where(WeatherData.full_date == specific_date)
+    # Получение данных из модели с фильтром на day и time
+    specific_date = '13 of October'
+    weather_data_for_specific_date = WeatherData.select().where(
+        WeatherData.day == specific_date,
+        WeatherData.time == 'nune'
+    )
     for data in weather_data_for_specific_date:
-        print(specific_date, ':', data.content)
-        pass
+        print(specific_date, ':', data.content, ', ', data.weather)
+        print('~' * 150)
 
-    # Получение данных из модели для конкретной даты (единственная запись)
+    # Получение данных из модели для конкретной даты (первая найденная запись)
     specific_date = '2023-10-01'
     data_for_specific_date = WeatherData.get(WeatherData.full_date == specific_date)
-    print(specific_date, ':', data_for_specific_date.weather)
+    print(specific_date, ':', data_for_specific_date.content, ', ', data_for_specific_date.weather)
 
 #TODO:
 # проверить фактическое обновление данных, выводимых на печать, после обновления данных на сайте
