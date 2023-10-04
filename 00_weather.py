@@ -357,49 +357,44 @@ class BaseTable(peewee.Model):
         database = database
 
 
-# Определение модели для данных о погоде
+class Day(BaseTable):
+    day = peewee.CharField()
+
+
+class TimeOfDay(BaseTable):
+    time = peewee.CharField()
+
+
 class WeatherData(BaseTable):
+    day = peewee.ForeignKeyField(Day, field='day')
+    time = peewee.ForeignKeyField(TimeOfDay, field='time')
     weekday = peewee.CharField()
     content = peewee.CharField()
     weather = peewee.CharField()
-    full_date = peewee.CharField(unique=True)
+    full_date = peewee.CharField()
 
-# Создание таблицы в базе данных. Используется для установления соединения с базой данных,
-# # которое требуется перед выполнением операций с базой данных:
+
 database.connect()
-
-# здесь может быть несколько таблиц, на основе которых создается database.
-# пытается создать таблицу с именем WeatherData, если она еще не существует.
-# Если таблица уже существует, эта операция просто игнорируется. Таким образом,
-#  это безопасный способ убедиться, что нужная таблица существует в базе данных
-#  без риска повторного создания:
-database.create_tables([WeatherData])
+database.create_tables([Day, TimeOfDay, WeatherData])
 
 
-# Функция для сохранения данных о погоде в базу данных
-def save_weather_data(data):
-    for date, times_data in data.items():
-        for time, values in times_data.items():
-            # Извлекаем данные из вложенного словаря
-            weekday = values.get('weekday')
-            content = values.get('content')
-            weather = values.get('weather')
-            full_date = values.get('full_date')
+def save_weather_data(weather_dict):
+    for day, day_content in weather_dict.items():
+        for time, time_content in day_content.items():
+            weekday = time_content.get('weekday')
+            content = time_content.get('content')
+            weather = time_content.get('weather')
+            full_date = time_content.get('full_date')
+            # print(f'Взяли данные из словаря: {day:15}, {time:7}, {weekday:9}, {content:4}, {weather}, {full_date:8}')
 
-            try:
-                WeatherData.create(
-                    weekday=weekday,
-                    content=content,
-                    weather=weather,
-                    full_date=full_date
-                )
-            except peewee.IntegrityError:
-                # Если запись с такой датой уже существует, то обновляем ее
-                existing_data = WeatherData.get(full_date=full_date)
-                existing_data.weekday = weekday
-                existing_data.content = content
-                existing_data.weather = weather
-                existing_data.save()
+            WeatherData.create(
+                day=day,
+                time=time,
+                weekday=weekday,
+                content=content,
+                weather=weather,
+                full_date=full_date
+            )
 
 
 # # Пример данных о погоде
@@ -597,6 +592,7 @@ class ConsoleInterface:
 
         self.datas.refresh_database(current_dict_of_weather,
                                     make_copy=False)  # передаем словарь в обновитель базы данных
+        self.datas.return_data_for_all_days()  # обновляем значение self.datas, с которой работают другие функции
         print('База обновлена\n')
 
     def _update_old_type_database(self):
@@ -741,20 +737,21 @@ if __name__ == "__main__":
     all_weather_data = WeatherData.select()
     # Получение данных из модели для всех записей
     for data in all_weather_data:
-    # TODO разобраться с обходом вложенных данных:
         for key, value in data.__data__.items():
             print(f"{key}: {value}")
+        print('-' * 20)
 
     # Получение данных из модели для конкретной даты
     specific_date = '2023-10-01'
     weather_data_for_specific_date = WeatherData.select().where(WeatherData.full_date == specific_date)
     for data in weather_data_for_specific_date:
-        print(data.content)  # Здесь field_name - это имя поля в вашей модели, например, 'content'
+        print(specific_date, ':', data.content)
+        pass
 
     # Получение данных из модели для конкретной даты (единственная запись)
     specific_date = '2023-10-01'
     data_for_specific_date = WeatherData.get(WeatherData.full_date == specific_date)
-    print(data_for_specific_date.weather)  # Здесь field_name - это имя поля в вашей модели, например, 'weather'
+    print(specific_date, ':', data_for_specific_date.weather)
 
 #TODO:
 # проверить фактическое обновление данных, выводимых на печать, после обновления данных на сайте
