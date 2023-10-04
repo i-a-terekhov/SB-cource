@@ -457,7 +457,7 @@
         "nune": {
             "weekday": "Friday",
             "content": "+4",
-            "weather": "Пасмурно, снег с дождем",
+            "weather": "Cloudy, snow and rain",
             "full_date": "2023-10-13"
         },
         "evening": {
@@ -483,7 +483,7 @@
         "nune": {
             "weekday": "Saturday",
             "content": "+4",
-            "weather": "Пасмурно, снег с дождем",
+            "weather": "Cloudy, snow and rain",
             "full_date": "2023-10-14"
         },
         "evening": {

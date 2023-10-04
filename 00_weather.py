@@ -387,14 +387,24 @@ def save_weather_data(weather_dict):
             full_date = time_content.get('full_date')
             # print(f'Взяли данные из словаря: {day:15}, {time:7}, {weekday:9}, {content:4}, {weather}, {full_date:8}')
 
-            WeatherData.create(
-                day=day,
-                time=time,
-                weekday=weekday,
-                content=content,
-                weather=weather,
-                full_date=full_date
-            )
+            try:
+                weather_data = WeatherData.get(day=day, time=time)
+                # Если запись существует, обновляем ее
+                weather_data.weekday = weekday
+                weather_data.content = content
+                weather_data.weather = weather
+                weather_data.full_date = full_date
+                weather_data.save()
+            except WeatherData.DoesNotExist:
+                # Если запись не найдена, создаем новую
+                WeatherData.create(
+                    day=day,
+                    time=time,
+                    weekday=weekday,
+                    content=content,
+                    weather=weather,
+                    full_date=full_date
+                )
 
 
 class ImageMaker:
@@ -722,32 +732,28 @@ if __name__ == "__main__":
     save_weather_data(current_weather_dict)
 
     all_weather_data = WeatherData.select()
-    # Получение данных из модели для всех записей
+    print('Получение данных из модели для всех записей:')
     for data in all_weather_data:
         # pprint(data.__data__.items())
         for key, value in data.__data__.items():
             print(f"{key:}: {value:4}", end=', ')
         print()
-        print('~' * 150)
+    print('~' * 150)
 
-    # Получение данных из модели с фильтром на day и time
+    print('Получение данных из модели с фильтром на day и time:')
     specific_date = '13 of October'
     weather_data_for_specific_date = WeatherData.select().where(
         WeatherData.day == specific_date,
-        WeatherData.time == 'nune'
+        # WeatherData.time == 'nune'
     )
     for data in weather_data_for_specific_date:
         print(specific_date, ':', data.content, ', ', data.weather)
-        print('~' * 150)
+    print('~' * 150)
 
-    # Получение данных из модели для конкретной даты (первая найденная запись)
+    print('Получение данных из модели для конкретной даты (первая найденная запись):')
     specific_date = '2023-10-01'
     data_for_specific_date = WeatherData.get(WeatherData.full_date == specific_date)
     print(specific_date, ':', data_for_specific_date.content, ', ', data_for_specific_date.weather)
 
-#TODO:
-# проверить фактическое обновление данных, выводимых на печать, после обновления данных на сайте
-# (вероятно, новые данные не подгружаются в переменную datas из ConsoleInterface._all_days_in_console
-# после функции ConsoleInterface._upload_data
 
 # запуск в консоли: C:\Users\Ivan\PyCharm\SkillBox\lesson_016\venv\Scripts\Python.exe C:\Users\Ivan\PyCharm\SkillBox\lesson_016\00_weather.py
