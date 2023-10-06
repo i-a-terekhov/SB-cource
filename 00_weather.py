@@ -57,7 +57,7 @@ import json
 from datetime import datetime, timedelta
 from pprint import pprint
 import os
-import peewee
+from SQLDataUpdater import WeatherData
 
 
 class WeatherScraper:
@@ -276,7 +276,7 @@ def date_to_str_en_date(date_str):
     return formatted_date
 
 
-class DatabaseUpdater:
+class JSONDatabaseUpdater:
     def __init__(self):
         self.database_name = r'C:\Users\Ivan\PyCharm\SkillBox\lesson_016\weather_dict.json'
         self.weather_data = None
@@ -347,35 +347,6 @@ class DatabaseUpdater:
         if not self.weather_data:
             self._get_datas_from_bd()
         return self.weather_data
-
-
-database = peewee.SqliteDatabase('weather_database.bd')
-
-
-class BaseTable(peewee.Model):
-    class Meta:
-        database = database
-
-
-class Day(BaseTable):
-    day = peewee.CharField()
-
-
-class TimeOfDay(BaseTable):
-    time = peewee.CharField()
-
-
-class WeatherData(BaseTable):
-    day = peewee.ForeignKeyField(Day)
-    time = peewee.ForeignKeyField(TimeOfDay)
-    weekday = peewee.CharField()
-    content = peewee.CharField()
-    weather = peewee.CharField()
-    full_date = peewee.CharField()
-
-
-database.connect()
-database.create_tables([Day, TimeOfDay, WeatherData])
 
 
 def save_weather_data(weather_dict):
@@ -559,7 +530,7 @@ class ConsoleInterface:
 
     def __init__(self):
         self.continue_dialog = True
-        self.datas = DatabaseUpdater()
+        self.datas = JSONDatabaseUpdater()
         self.full_dates_list = []
         for date_data in self.datas.return_data_for_all_days().values():
             self.full_dates_list.append(date_data['nune']['full_date'])
