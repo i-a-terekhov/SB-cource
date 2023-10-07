@@ -301,13 +301,13 @@
         "nune": {
             "weekday": "Saturday",
             "content": "+14",
-            "weather": "Overcast, no precipitation",
+            "weather": "Cloudy, no precipitation",
             "full_date": "2023-10-07"
         },
         "evening": {
             "weekday": "Saturday",
             "content": "+11",
-            "weather": "Variable cloudiness, no precipitation",
+            "weather": "Clear weather, no precipitation",
             "full_date": "2023-10-07"
         }
     },
@@ -315,7 +315,7 @@
         "night": {
             "weekday": "Sunday",
             "content": "+8",
-            "weather": "Variable cloudiness, no precipitation",
+            "weather": "Partly cloudy, no precipitation",
             "full_date": "2023-10-08"
         },
         "morning": {
@@ -326,60 +326,60 @@
         },
         "nune": {
             "weekday": "Sunday",
-            "content": "+15",
-            "weather": "Variable cloudiness, no precipitation",
+            "content": "+14",
+            "weather": "Overcast, light rain",
             "full_date": "2023-10-08"
         },
         "evening": {
             "weekday": "Sunday",
-            "content": "+12",
-            "weather": "Partly cloudy, no precipitation",
+            "content": "+10",
+            "weather": "Variable cloudiness, no precipitation",
             "full_date": "2023-10-08"
         }
     },
     "9 of October": {
         "night": {
             "weekday": "Monday",
-            "content": "+9",
+            "content": "+8",
             "weather": "Partly cloudy, no precipitation",
             "full_date": "2023-10-09"
         },
         "morning": {
             "weekday": "Monday",
-            "content": "+12",
+            "content": "+10",
             "weather": "Variable cloudiness, no precipitation",
             "full_date": "2023-10-09"
         },
         "nune": {
             "weekday": "Monday",
-            "content": "+17",
-            "weather": "Partly cloudy, no precipitation",
+            "content": "+14",
+            "weather": "Overcast, light rain",
             "full_date": "2023-10-09"
         },
         "evening": {
             "weekday": "Monday",
-            "content": "+13",
-            "weather": "Partly cloudy, no precipitation",
+            "content": "+10",
+            "weather": "Variable cloudiness, no precipitation",
             "full_date": "2023-10-09"
         }
     },
     "10 of October": {
         "night": {
             "weekday": "Tuesday",
-            "content": "+10",
+            "content": "+9",
             "weather": "Overcast, no precipitation",
             "full_date": "2023-10-10"
         },
         "morning": {
             "weekday": "Tuesday",
-            "content": "+12",
-            "weather": "Overcast, no precipitation",
+            "content": "+11",
+            "weather": "Partly cloudy, no precipitation",
             "full_date": "2023-10-10"
         },
         "nune": {
             "weekday": "Tuesday",
-            "content": "+17",
-            "weather": "Variable cloudiness, no precipitation",
+            "content": "+16",
+            "weather": "Overcast, no precipitation",
             "full_date": "2023-10-10"
         },
         "evening": {
@@ -392,20 +392,20 @@
     "11 of October": {
         "night": {
             "weekday": "Wednesday",
-            "content": "+11",
-            "weather": "Overcast, no precipitation",
+            "content": "+10",
+            "weather": "Variable cloudiness, no precipitation",
             "full_date": "2023-10-11"
         },
         "morning": {
             "weekday": "Wednesday",
             "content": "+13",
-            "weather": "Variable cloudiness, no precipitation",
+            "weather": "Overcast, no precipitation",
             "full_date": "2023-10-11"
         },
         "nune": {
             "weekday": "Wednesday",
             "content": "+17",
-            "weather": "Clear weather, no precipitation",
+            "weather": "Overcast, no precipitation",
             "full_date": "2023-10-11"
         },
         "evening": {
@@ -424,19 +424,19 @@
         },
         "morning": {
             "weekday": "Thursday",
-            "content": "+10",
+            "content": "+15",
             "weather": "Variable cloudiness, no precipitation",
             "full_date": "2023-10-12"
         },
         "nune": {
             "weekday": "Thursday",
-            "content": "+9",
-            "weather": "Overcast, no precipitation",
+            "content": "+16",
+            "weather": "Variable cloudiness, no precipitation",
             "full_date": "2023-10-12"
         },
         "evening": {
             "weekday": "Thursday",
-            "content": "+7",
+            "content": "+10",
             "weather": "Overcast, no precipitation",
             "full_date": "2023-10-12"
         }
@@ -444,79 +444,131 @@
     "13 of October": {
         "night": {
             "weekday": "Friday",
-            "content": "+6",
-            "weather": "Overcast, no precipitation",
+            "content": "+7",
+            "weather": "Variable cloudiness, no precipitation",
             "full_date": "2023-10-13"
         },
         "morning": {
             "weekday": "Friday",
-            "content": "+6",
-            "weather": "Cloudy, no precipitation",
+            "content": "+8",
+            "weather": "Overcast, no precipitation",
             "full_date": "2023-10-13"
         },
         "nune": {
             "weekday": "Friday",
-            "content": "+8",
-            "weather": "Clear weather, no precipitation",
+            "content": "+10",
+            "weather": "Overcast, light rain",
             "full_date": "2023-10-13"
         },
         "evening": {
             "weekday": "Friday",
-            "content": "+6",
-            "weather": "Clear weather, no precipitation",
+            "content": "+7",
+            "weather": "Overcast, light rain",
             "full_date": "2023-10-13"
         }
     },
     "14 of October": {
         "night": {
             "weekday": "Saturday",
-            "content": "+4",
-            "weather": "Clear weather, no precipitation",
-            "full_date": "2023-10-14"
-        },
-        "morning": {
-            "weekday": "Saturday",
             "content": "+6",
             "weather": "Variable cloudiness, no precipitation",
             "full_date": "2023-10-14"
         },
+        "morning": {
+            "weekday": "Saturday",
+            "content": "+7",
+            "weather": "Overcast, light rain",
+            "full_date": "2023-10-14"
+        },
         "nune": {
             "weekday": "Saturday",
-            "content": "+9",
-            "weather": "Cloudy, no precipitation",
+            "content": "+11",
+            "weather": "Overcast, no precipitation",
             "full_date": "2023-10-14"
         },
         "evening": {
             "weekday": "Saturday",
-            "content": "+9",
-            "weather": "Partly cloudy, no precipitation",
+            "content": "+10",
+            "weather": "Overcast, no precipitation",
             "full_date": "2023-10-14"
         }
     },
     "15 of October": {
         "night": {
             "weekday": "Sunday",
-            "content": "+4",
-            "weather": "Clear weather, no precipitation",
+            "content": "+10",
+            "weather": "Overcast, no precipitation",
             "full_date": "2023-10-15"
         },
         "morning": {
             "weekday": "Sunday",
-            "content": "+6",
+            "content": "+9",
             "weather": "Variable cloudiness, no precipitation",
             "full_date": "2023-10-15"
         },
         "nune": {
             "weekday": "Sunday",
-            "content": "+9",
-            "weather": "Cloudy, no precipitation",
+            "content": "+11",
+            "weather": "Overcast, no precipitation",
             "full_date": "2023-10-15"
         },
         "evening": {
             "weekday": "Sunday",
-            "content": "+9",
-            "weather": "Partly cloudy, no precipitation",
+            "content": "+10",
+            "weather": "Overcast, no precipitation",
             "full_date": "2023-10-15"
+        }
+    },
+    "16 of October": {
+        "night": {
+            "weekday": "Monday",
+            "content": "+7",
+            "weather": "Overcast, light rain",
+            "full_date": "2023-10-16"
+        },
+        "morning": {
+            "weekday": "Monday",
+            "content": "+7",
+            "weather": "Overcast, light rain",
+            "full_date": "2023-10-16"
+        },
+        "nune": {
+            "weekday": "Monday",
+            "content": "+10",
+            "weather": "Variable cloudiness, no precipitation",
+            "full_date": "2023-10-16"
+        },
+        "evening": {
+            "weekday": "Monday",
+            "content": "+10",
+            "weather": "Variable cloudiness, no precipitation",
+            "full_date": "2023-10-16"
+        }
+    },
+    "17 of October": {
+        "night": {
+            "weekday": "Tuesday",
+            "content": "+7",
+            "weather": "Overcast, light rain",
+            "full_date": "2023-10-17"
+        },
+        "morning": {
+            "weekday": "Tuesday",
+            "content": "+7",
+            "weather": "Overcast, light rain",
+            "full_date": "2023-10-17"
+        },
+        "nune": {
+            "weekday": "Tuesday",
+            "content": "+10",
+            "weather": "Variable cloudiness, no precipitation",
+            "full_date": "2023-10-17"
+        },
+        "evening": {
+            "weekday": "Tuesday",
+            "content": "+10",
+            "weather": "Variable cloudiness, no precipitation",
+            "full_date": "2023-10-17"
         }
     }
 }
